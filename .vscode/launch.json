@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug Rust Project (LinossRust)",
+      "program": "${workspaceFolder}/target/debug/LinossRust",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build Rust Project (LinossRust)",
+      
+    }
+  ]
+}

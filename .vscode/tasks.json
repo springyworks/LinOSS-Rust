@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Rust Project (LinossRust)",
+      "type": "cargo",
+      "command": "build",
+      "args": [],
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Compile the Rust project LinossRust using cargo build."
+    }
+  ]
+}

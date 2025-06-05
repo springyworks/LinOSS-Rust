@@ -1,0 +1,14 @@
+[package]
+name = "linoss_rust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+burn       = { version = "0.17.1", features = ["ndarray","autodiff"] }
+#burn-ndarray = "0.17.1"
+#burn-onnx = { version = "0.8.0", features = ["cuda", "cuda-ops", "cuda-ops-f32", "cuda-ops-f64"] }
+nalgebra = { version = "0.33.2", features = ["rand"] }
+rand = "0.9.1"
+#rand_distr = "0.5.1"
+dess = { path = "/home/rustuser/rustdev/de-system-solver_kos/dess", version = "0.1.0" }
+ode_solvers = "0.6"

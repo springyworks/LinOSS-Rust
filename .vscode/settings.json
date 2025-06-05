@@ -1,0 +1,11 @@
+{
+    "workbench.colorCustomizations": {
+        "editor.background": "#010101",
+        "activityBar.background": "#322E08",
+        "titleBar.activeBackground": "#46410C",
+        "titleBar.activeForeground": "#FCFAEC"
+    },
+    "files.readonlyInclude": {
+        "/home/rustuser/.vscode-insiders/extensions/secure-dev-ops.code-realtime-ce-2.0.7/**/*": true
+    }
+}
