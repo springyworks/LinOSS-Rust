@@ -58,6 +58,50 @@ fn solve_ode_euler_autodiff_vector<T: Backend>() {
     print_tensor_1d("Final result of y", &y);
 }
 
+// Simplified state-space model function
+fn simplified_ssm<T: Backend>() {
+    let device = T::Device::default();
+
+    // Define dimensions
+    let n = 20; // State vector size
+
+    // Initialize state vector x(k) and input scalar u(k)
+    let mut x = Tensor::<T, 2>::from_data(TensorData::zeros::<f32, _>([n, 1]), &device).require_grad();
+    let u = Tensor::<T, 1>::from_data(TensorData::from([1.0]), &device);
+
+    // Learnable B matrix (vector)
+    let b_values: Vec<f32> = vec![0.1; n];
+    let b = Tensor::<T, 2>::from_data(TensorData::new::<f32, _>(b_values, [n, 1]), &device).require_grad();
+
+    // Constant A matrix (identity for simplicity)
+    let a_values: Vec<f32> = (0..n)
+        .flat_map(|i| (0..n).map(move |j| if i == j { 1.0 } else { 0.0 }))
+        .collect();
+    let a = Tensor::<T, 2>::from_data(TensorData::new::<f32, _>(a_values, [n, n]), &device);
+
+    println!("Initial state x: {:?}", x.to_data().bytes);
+
+    for step in 0..10 {
+        // Clone tensors to avoid moving them
+        let a_clone = a.clone();
+        let b_clone = b.clone();
+
+        // Compute A * x(k)
+        let ax = a_clone.matmul(x.clone());
+
+        // Compute B * u(k)
+        let bu = b_clone.mul_scalar(u.to_data().bytes[0]);
+
+        // Update state: x(k+1) = A * x(k) + B * u(k)
+        x = ax.add(bu);
+
+        // Reset gradients for the next step
+        x = x.detach().require_grad();
+
+        println!("State at step {}: {:?}", step + 1, x.to_data().bytes);
+    }
+}
+
 fn main() {
     // Create a device for the backend
     let device = <MyAutodiffBackend as Backend>::Device::default();
@@ -89,4 +133,7 @@ fn main() {
 
     // Run the ODE solver demo with autodiff for a vector
     solve_ode_euler_autodiff_vector::<MyAutodiffBackend>();
+
+    // Run the simplified state-space model
+    simplified_ssm::<MyAutodiffBackend>();
 }
