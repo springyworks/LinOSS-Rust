@@ -18,7 +18,6 @@ The root `README.md` has been successfully updated to reference the new `develop
 - `./development-management/research-notes/papers.md` - Research implementation details
 - `./development-management/architecture/system-overview.md` - Technical architecture
 - `./development-management/project-status/timeline.md` - Development timeline
-- `./examples/web_demo/dist/index.html` - Interactive WASM demo
 
 ## Link Verification ✅
 
@@ -30,7 +29,6 @@ All referenced files exist and are properly organized:
 ✅ development-management/documentation/api-reference.md
 ✅ development-management/research-notes/papers.md
 ✅ development-management/architecture/system-overview.md
-✅ examples/web_demo/dist/index.html
 ```
 
 ## Benefits

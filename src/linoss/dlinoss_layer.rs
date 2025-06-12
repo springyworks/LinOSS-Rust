@@ -291,3 +291,42 @@ impl<B: Backend> DLinossLayer<B> {
         self.enable_damping
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use burn::backend::ndarray::NdArray;
+    use burn::tensor::Tensor;
+
+    type TestBackend = NdArray<f32>;
+
+    #[test]
+    fn test_dlinoss_layer_forward_runs() {
+        let device = Default::default();
+        let config = DLinossLayerConfig::new_dlinoss(2, 4, 2);
+        let layer = DLinossLayer::<TestBackend>::new(&config, &device);
+        let input = Tensor::<TestBackend, 3>::zeros([1, 3, 2], &device);
+        let output = layer.forward(input);
+        // Output should have shape [batch, seq_len, d_output]
+        let shape = output.dims();
+        assert_eq!(shape[0], 1);
+        assert_eq!(shape[1], 3);
+        assert_eq!(shape[2], 2);
+    }
+
+    #[test]
+    fn test_dlinoss_layer_damping_enabled() {
+        let device = Default::default();
+        let config = DLinossLayerConfig::new_dlinoss(2, 4, 2);
+        let layer = DLinossLayer::<TestBackend>::new(&config, &device);
+        assert!(layer.has_damping());
+    }
+
+    #[test]
+    fn test_dlinoss_layer_damping_disabled() {
+        let device = Default::default();
+        let config = DLinossLayerConfig::vanilla_linoss(2, 4, 2);
+        let layer = DLinossLayer::<TestBackend>::new(&config, &device);
+        assert!(!layer.has_damping());
+    }
+}

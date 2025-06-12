@@ -375,6 +375,5 @@ See the `examples/` directory for complete working examples:
 - `basic_usage.rs` - Simple LinOSS layer usage
 - `dlinoss_comparison.rs` - D-LinOSS vs vanilla LinOSS
 - `compare_scan_methods.rs` - Performance comparison
-- `web_demo/` - Interactive WASM demonstration
 
 Last updated: June 12, 2025

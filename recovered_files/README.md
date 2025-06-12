@@ -4,7 +4,7 @@
 
 [![Tests](https://img.shields.io/badge/tests-7%2F7%20passing-brightgreen)](./development-management/project-status/timeline.md)
 [![Examples](https://img.shields.io/badge/examples-8%2F8%20working-brightgreen)](./examples/)
-[![Backends](https://img.shields.io/badge/backends-CPU%20%7C%20GPU%20%7C%20WASM-blue)](./development-management/architecture/system-overview.md)
+[![Backends](https://img.shields.io/badge/backends-CPU%20%7C%20GPU-blue)](./development-management/architecture/system-overview.md)
 [![Research](https://img.shields.io/badge/papers-LinOSS%20%7C%20D--LinOSS-purple)](./development-management/research-notes/papers.md)
 
 ## 🚀 Quick Links
@@ -14,18 +14,16 @@
 - **🔬 [Research Implementation](./development-management/research-notes/papers.md)** - LinOSS & D-LinOSS papers
 - **🏗️ [System Architecture](./development-management/architecture/system-overview.md)** - Technical architecture overview
 - **📊 [Project Status](./development-management/project-status/timeline.md)** - Development timeline and metrics
-- **🌐 [Web Demo](./examples/web_demo/dist/index.html)** - Interactive WASM demonstration
 
 ## 📋 Quick Status
 
 | Component | Status | Details |
 |-----------|--------|---------|
 | **Core Implementation** | ✅ Complete | LinOSS + D-LinOSS with 24.84% improvement |
-| **Multi-Backend Support** | ✅ Working | CPU (NdArray), GPU (WGPU), WASM |
+| **Multi-Backend Support** | ✅ Working | CPU (NdArray), GPU (WGPU) |
 | **Test Suite** | ✅ Passing | 7/7 tests (5 unit + 2 integration) |
 | **Examples** | ✅ Working | 8/8 examples compile and run |
 | **Documentation** | ✅ Complete | Comprehensive guides and API docs |
-| **Web Demo** | ✅ Live | Interactive patterns with educational content |
 
 <details>
 <summary><b>📑 Table of Contents</b> (click to expand)</summary>

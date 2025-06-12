@@ -24,6 +24,7 @@ type CustomWgpuDevice = burn::backend::wgpu::WgpuDevice;
 const PROGRESS_CHARS: [char; 4] = ['-', '\\', '|', '/'];
 
 fn main() {
+    // Example entry point
     run_benchmark::<CustomNdArrayBackend>(CustomNdArrayDevice::default(), "NdArray Backend");
 
     #[cfg(feature = "wgpu_backend")]

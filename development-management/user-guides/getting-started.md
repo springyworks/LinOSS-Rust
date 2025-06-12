@@ -336,7 +336,6 @@ Error: OutOfMemory
 1. **Basic Usage**: `cargo run --example basic_usage`
 2. **D-LinOSS Comparison**: `cargo run --example dlinoss_comparison`
 3. **Performance Test**: `cargo run --example compare_scan_methods`
-4. **Web Demo**: Open `examples/web_demo/dist/index.html`
 
 ### Advanced Topics
 

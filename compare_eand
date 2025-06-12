@@ -22,13 +22,13 @@ find "$SOURCE" -type f \( -name "*.rs" -o -name "*.toml" -o -name "*.md" \) \
     rel_path=${file#$SOURCE/}
     dest_file="$DEST/$rel_path"
     
-    if [ ! -f "$dest_file" ]; then
-      # File doesn't exist in destination
-      echo "New file: $rel_path"
+    # If destination file is empty or does not exist, copy from source
+    if [ ! -f "$dest_file" ] || [ ! -s "$dest_file" ]; then
+      echo "Empty or new file: $rel_path (replacing with source version)"
       mkdir -p "$(dirname "$dest_file")"
       cp "$file" "$dest_file"
     else
-      # File exists in both - check if different
+      # File exists and is not empty - check if different
       if ! cmp -s "$file" "$dest_file"; then
         echo "Modified file: $rel_path"
         mkdir -p "$DEST/recovered_files/$(dirname "$rel_path")"

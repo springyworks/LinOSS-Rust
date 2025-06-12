@@ -32,8 +32,8 @@ env_logger = "0.11"
 tokio = { version = "1", features = ["full"] }
 plotters = "0.3.6"
 plotters-ratatui-backend = "0.3.0" # Corrected to plotters-ratatui-backend
-serde = { version = "1.0", features = ["derive"] } # Add serde for serialization
 num-traits = "0.2" # Added num-traits
+serde = { version = "1.0", features = ["derive"] }
 
 #dess = { path = "/home/rustuser/rustdev/de-system-solver_kos/dess", version = "0.1.0" }
 #ode_solvers = "0.6"

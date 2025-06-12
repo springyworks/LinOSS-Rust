@@ -1,5 +1,6 @@
 // Removed the invalid `html_extra_files` attribute
 pub mod linoss;
+pub mod data;
 pub type Vector = nalgebra::DVector<f64>;
 pub type Matrix = nalgebra::DMatrix<f64>;
 

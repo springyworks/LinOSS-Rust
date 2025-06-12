@@ -25,18 +25,6 @@
 - ✅ `development-management/research-notes/papers.md` - Fixed both citations
 - ✅ `development-management/research-notes/dlinoss-implementation-summary.md` - Fixed D-LinOSS citation
 
-### Web Demo Files:
-- ✅ `examples/web_demo/dist/index.html` - Fixed LinOSS author name, added D-LinOSS section
-- ✅ `examples/web_demo/index.html` - Fixed LinOSS author name, added D-LinOSS section
-
-## 🌐 **Web Demo Enhancements**
-
-Added a dedicated D-LinOSS section to the web demo:
-- **New Section**: "🌊 D-LinOSS: Damped Oscillators"
-- **Description**: Explains D-LinOSS principles and energy dissipation
-- **Citation**: Complete citation with proper author names and arXiv link
-- **Visual**: Purple color theme to distinguish from LinOSS
-
 ## 📚 **Correct Citations Now**
 
 ### LinOSS (First Paper):

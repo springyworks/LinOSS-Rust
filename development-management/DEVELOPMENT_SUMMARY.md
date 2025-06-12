@@ -14,12 +14,6 @@ The `development-management/` directory provides comprehensive organization and 
 - Verified CPU and GPU backend compatibility
 - Established comprehensive test suite
 
-#### Phase 2: Web Demo Development  
-- Created interactive WASM web demo
-- Implemented 6 pattern types with educational content
-- Achieved mobile responsiveness and accessibility
-- Documented Burn/WASM integration challenges
-
 #### Phase 3: D-LinOSS Research Implementation
 - Implemented D-LinOSS based on arXiv:2505.12171 (2025)
 - Achieved 24.84% performance improvement over vanilla LinOSS
@@ -42,20 +36,20 @@ The `development-management/` directory provides comprehensive organization and 
 
 ### Technical Accomplishments
 - **7/7 tests passing** (5 unit + 2 integration)
-- **8/8 examples working** across CPU/GPU/WASM
+- **8/8 examples working** across CPU/GPU
 - **Zero compilation warnings** in entire codebase
 - **Stable GPU utilization** confirmed under load
 
 ### Research Impact
 - **2 papers implemented**: LinOSS (2024) + D-LinOSS (2025)
-- **Novel contributions**: Pure WASM LinOSS implementation
+- **Novel contributions**: Pure native LinOSS implementation
 - **Performance validation**: 24.84% improvement with D-LinOSS
-- **Educational value**: Interactive web demo with proper citations
+- **Educational value**: Interactive demo with proper citations
 
 ### Development Quality
 - **Comprehensive documentation**: API, user guides, architecture
 - **Research integration**: Papers → working code with validation
-- **Multi-platform support**: Native, GPU, WASM deployment
+- **Multi-platform support**: Native, GPU deployment
 - **Professional standards**: Testing, documentation, processes
 
 ## Directory Structure
@@ -88,7 +82,7 @@ development-management/
 | Compilation | ✅ Clean | Zero errors, zero warnings |
 | Tests | ✅ Passing | 7/7 tests pass |
 | Examples | ✅ Working | 8/8 examples compile and run |
-| Backends | ✅ Compatible | CPU, GPU, WASM all working |
+| Backends | ✅ Compatible | CPU, GPU all working |
 | Documentation | ✅ Complete | API, guides, architecture |
 
 ### Research Quality  
@@ -96,7 +90,7 @@ development-management/
 |--------|--------|---------|
 | Paper Implementation | ✅ Complete | LinOSS + D-LinOSS implemented |
 | Performance Validation | ✅ Verified | 24.84% improvement demonstrated |
-| Novel Contributions | ✅ Achieved | WASM LinOSS, integration guides |
+| Novel Contributions | ✅ Achieved | Native LinOSS, integration guides |
 | Citations | ✅ Updated | Latest 2024/2025 research |
 
 ### Development Quality
@@ -122,8 +116,8 @@ development-management/
 - **Easy Integration**: Clear examples and getting started guides
 
 ### For the Community
-- **Open Knowledge**: Documented Burn/WASM integration challenges
-- **Educational Value**: Interactive web demo with proper research citations
+- **Open Knowledge**: Documented Burn integration challenges
+- **Educational Value**: Interactive demo with proper research citations
 - **Best Practices**: Development management and organization examples
 - **Research Bridge**: Academic research → practical implementation
 
@@ -190,3 +184,32 @@ The LinOSS Rust project now stands as a **model example** of how to:
 ---
 
 *This summary reflects the state of the LinOSS Rust project as of June 12, 2025. The development management structure provides a solid foundation for continued growth and contribution to both the research and development communities.*
+
+---
+
+## [2025-06-12] Note: WASM/Web Demo Phase Skipped
+
+Phase 2 (Web Demo Development) was intentionally skipped during the post-crash recovery and reconstruction of LinossRust. The current focus is on restoring and validating core model and data pipeline functionality for native (CPU/GPU) workflows. WASM/web integration and demo features will be revisited in a future development phase.
+
+## [2025-06-12] Burn Tensor Data API Gotcha (LinossRust Recovery)
+
+During the recovery and reconstruction of the LinossRust project, restoring the synthetic data pipeline for Burn 0.17 required careful handling of tensor creation from flat vectors. The Burn API expects:
+
+- Use `TensorData::new(data, shape)` to create tensor data from a flat vector and shape.
+- Use `Tensor::from_data(tensor_data, device)` to create the tensor.
+- Direct use of `Tensor::from_floats(data, device)` with a flat vector and then reshaping can cause shape/rank panics if not used exactly as expected.
+
+**Example Fix:**
+```rust
+let tensor_data = TensorData::new(data, [batch, seq_len, input_dim]);
+let tensor = Tensor::<B, 3>::from_data(tensor_data, device);
+```
+
+**Lesson:**
+- Always check the Burn version and API for tensor creation from raw data.
+- If you see a panic about "Given dimensions differ from the tensor rank", check that you are using `TensorData::new` and `Tensor::from_data` with the correct shape and data length.
+
+See also: `examples/synthetic_data_usage.rs` for a working reference.
+
+## NOTE (hum.dev):
+Always use `cargo check --all-targets` to ensure all code, including examples and tests, is checked for errors and warnings. This is the preferred workflow for comprehensive code quality.

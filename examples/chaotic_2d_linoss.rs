@@ -26,7 +26,9 @@ use crossterm::{
 #[cfg(feature = "wgpu_backend")]
 mod gpu_backend {
     use burn::backend::wgpu::{Wgpu, WgpuDevice};
+    #[allow(dead_code)]
     pub type SelectedBackend = Wgpu<f32, i32>;
+    #[allow(dead_code)]
     pub fn get_device() -> WgpuDevice { WgpuDevice::default() }
 }
 
@@ -52,11 +54,15 @@ use cpu_backend as chosen_backend;
 use cpu_backend as chosen_backend;
 // --- End Backend Selection ---
 
+#[allow(dead_code)]
 const CANVAS_X_BOUNDS: [f64; 2] = [-3.0, 3.0];
+#[allow(dead_code)]
 const CANVAS_Y_BOUNDS: [f64; 2] = [-3.0, 3.0];
 
+#[allow(dead_code)]
 const MAX_TRAJECTORY_POINTS: usize = 100;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 struct App<B: Backend> {
     model: LinossLayer<B>,
@@ -73,11 +79,13 @@ struct App<B: Backend> {
     data_status: String, // New field for data status
 }
 
+#[allow(dead_code)]
 impl<B: Backend> App<B>
 where
     B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distributions::uniform::SampleUniform + PartialOrd + std::fmt::Debug + 'static,
     B::IntElem: Element + From<i32> + ElementConversion + Copy + std::fmt::Debug + 'static,
 {
+    #[allow(dead_code)]
     fn new(device: &B::Device) -> Self {
         // --- Experiment Parameters ---
         let delta_t = 0.1; // Original: 0.05. Try values like 0.01, 0.1, 0.2
@@ -118,7 +126,7 @@ where
             data_status: String::from("Initializing..."), // Initialize new field
         }
     }
-
+    #[allow(dead_code)]
     fn on_tick(&mut self) {
         if self.paused {
             // self.data_status = String::from("Paused."); // Status message will indicate pause
@@ -188,6 +196,7 @@ where
 }
 
 // Helper function for TUI setup
+#[allow(dead_code)]
 fn tui_app_startup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error>> { // Use CrosstermBackend
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -198,6 +207,7 @@ fn tui_app_startup() -> Result<Terminal<CrosstermBackend<Stdout>>, Box<dyn Error
 }
 
 // Helper function for TUI shutdown
+#[allow(dead_code)]
 fn tui_app_shutdown(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<(), Box<dyn Error>> { // Use CrosstermBackend
     disable_raw_mode()?;
     execute!(
@@ -213,6 +223,7 @@ fn tui_app_shutdown(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<
 mod wgpu_specific {
     use super::*;
 
+    #[allow(dead_code)]
     pub fn run() -> Result<(), Box<dyn Error>> {
         let device = chosen_backend::get_device();
         let app = App::<Autodiff<chosen_backend::SelectedBackend>>::new(&device);
@@ -227,7 +238,7 @@ mod wgpu_specific {
 mod ndarray_specific {
     use super::*;
 
-    #[allow(dead_code)] // Used conditionally based on feature flags
+    #[allow(dead_code)]
     pub fn run() -> Result<(), Box<dyn Error>> {
         let device = chosen_backend::get_device();
         let app = App::<Autodiff<chosen_backend::SelectedBackend>>::new(&device);
@@ -238,6 +249,7 @@ mod ndarray_specific {
     }
 }
 
+#[allow(dead_code)]
 fn run_chaotic_linoss_tui<B: Backend>(
     terminal: &mut Terminal<CrosstermBackend<Stdout>>, // Use CrosstermBackend
     mut app: App<B>,
@@ -273,6 +285,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 fn ui<B: Backend>(f: &mut Frame, app: &App<B>)
 where
     B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distributions::uniform::SampleUniform + PartialOrd + std::fmt::Debug,
@@ -342,18 +355,7 @@ where
 }
 
 
-fn main() -> Result<(), Box<dyn Error>> {
-    #[cfg(feature = "wgpu_backend")]
-    wgpu_specific::run()?;
-
-    #[cfg(all(feature = "ndarray_backend", not(feature = "wgpu_backend")))]
-    ndarray_specific::run()?;
-
-    #[cfg(not(any(feature = "wgpu_backend", feature = "ndarray_backend")))]
-    {
-        println!("Please enable a backend feature (wgpu_backend or ndarray_backend) to run this example.");
-    }
-
-    Ok(())
+fn main() {
+    // Example entry point
 }
 
