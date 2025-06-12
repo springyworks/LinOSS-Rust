@@ -1,103 +1,137 @@
-use linoss_rust::linoss::{LinossModel, LinossBlockParams};
-use linoss_rust::{Vector, Matrix, LinossError};
+use burn::backend::NdArray;
+use burn::tensor::{Shape, Tensor, TensorData};
+use linoss_rust::linoss::{
+    model::FullLinossModel, model::FullLinossModelConfig, block::LinossBlockConfig, layer::LinossLayerConfig,
+};
+use linoss_rust::{LinossError, Vector}; // TensorData for creation, Shape for dimensions // Example backend
 
 fn main() -> Result<(), LinossError> {
-    println!("LinOSS Model Simulation Start");
+    println!("Linoss Model Simulation Start - SIMPLIFIED TEST");
 
-    // Define dimensions
-    let q_dim = 4;         // Dimension of each input vector uᵢ in the sequence (e.g., embedding dim)
-    let model_dim = 8;     // Internal dimension of the model (uˡ, xˡ, yˡ within blocks)
-                           // Also output of W_enc, and input to W_dec (from yL)
-    let ode_output_dim = model_dim; // Dimension of yˡ (output of ODE solver).
-                                   // For simplicity, assumed to be model_dim. If different, C matrix dims change.
-    let output_dim = 3;    // Dimension of each output vector oᵢ in the sequence
-    let num_layers_l = 2;  // Number of LinOSS blocks (L >= 1)
-    let sequence_len_n = 5; // Number of vectors in the input/output sequence
+    // Define dimensions (simplified for testing)
+    let q_dim = 1; // Dimension of input to the model
+    let model_dim = 2; // Internal model dimension (d_model, d_state_m)
+    let output_dim = 1; // Dimension of output from the model
+    let num_layers_l = 1; // Number of LinossBlock layers
+    let sequence_len_n = 2; // Length of the input sequence
+
+    println!(
+        "Test Config: q_dim={}, model_dim={}, output_dim={}, num_layers={}, sequence_len={}",
+        q_dim, model_dim, output_dim, num_layers_l, sequence_len_n
+    );
 
     if num_layers_l == 0 {
         println!("Error: num_layers_L must be at least 1.");
-        return Ok(()); // Or return an error
+        return Ok(());
     }
 
-    // --- Initialize Parameters (Dummy random values) ---
+    type MyBackend = NdArray<f32>;
+    let device = Default::default();
 
-    // Encoder: u⁰ ← Wenc * u + benc
-    // W_enc: model_dim x q_dim
-    // b_enc: model_dim x 1
-    let w_enc = Matrix::new_random(model_dim, q_dim);
-    let b_enc = Vector::new_random(model_dim);
+    let layer_config = LinossLayerConfig {
+        d_input_p: model_dim, // Input to the layer within the block is d_model
+        d_state_m: model_dim, // State dim of the layer within the block is d_model
+        d_output_q: model_dim, // Output of the layer within the block is d_model
+        delta_t: 0.001,
+        init_std: 0.02,
+        enable_d_feedthrough: true, // Corrected field name
+    };
 
-    // LinossBlockParams for L layers
-    let mut block_params_vec = Vec::new();
-    for layer_num in 0..num_layers_l {
-        // Linear readout: xl ← Cyl + Dul−1
-        // C: model_dim x ode_output_dim
-        // D: model_dim x model_dim (input uˡ⁻¹ has model_dim)
-        let c_matrix = Matrix::new_random(model_dim, ode_output_dim);
-        let d_matrix = Matrix::new_random(model_dim, model_dim);
+    // Define the feed-forward dimension for the block
+    let d_ff_block = model_dim * 2; // Example: 2x model dimension for GLU
 
-        // GLU weights: GLU(x) = sigmoid(W₁x) ◦ W₂x
-        // x (input to GLU) has model_dim. Output of GLU also model_dim for residual.
-        // W₁, W₂: model_dim x model_dim
-        let glu_w1 = Matrix::new_random(model_dim, model_dim);
-        let glu_w2 = Matrix::new_random(model_dim, model_dim);
+    let block_config = LinossBlockConfig {
+        d_state_m: layer_config.d_state_m, // State dimension for the LinossLayer inside the block
+        d_ff: d_ff_block,                  // Feed-forward dimension for GLU
+        delta_t: layer_config.delta_t,         // Delta_t for the LinossLayer
+        init_std: layer_config.init_std,       // Init_std for the LinossLayer and other linears
+        enable_d_feedthrough: layer_config.enable_d_feedthrough,   // Ensure this matches the (now snake_case) field in LinossBlockConfig and sources from the snake_case field in LinossLayerConfig
+    };
 
-        println!("Initializing parameters for Layer {}", layer_num + 1);
-        block_params_vec.push(LinossBlockParams::new(
-            c_matrix, d_matrix, glu_w1, glu_w2,
-        ));
-    }
+    let model_config = FullLinossModelConfig {
+        d_input: q_dim,
+        d_model: model_dim,
+        d_output: output_dim,
+        n_layers: num_layers_l,
+        linoss_block_config: block_config,
+    };
 
-    // Decoder: o ← Wdec * yL + bdec
-    // yL (output of last block's ODE solver) has ode_output_dim (assumed model_dim)
-    // W_dec: output_dim x ode_output_dim
-    // b_dec: output_dim x 1
-    let w_dec = Matrix::new_random(output_dim, ode_output_dim);
-    let b_dec = Vector::new_random(output_dim);
-
-    // Create LinossModel instance
-    println!("Creating LinossModel instance...");
-    let linoss_model = LinossModel::new(
-        w_enc,
-        b_enc,
-        block_params_vec,
-        w_dec,
-        b_dec,
-    )?;
+    let linoss_model: FullLinossModel<MyBackend> = model_config.init(&device);
     println!("LinossModel instance created.");
 
-    // Create a dummy input sequence u = [u₁, u₂, ..., uɴ]
-    // Each uᵢ is q_dim x 1
-    let mut input_sequence_u = Vec::new();
-    for i in 0..sequence_len_n {
-        // Adding a small value based on index for slight variation
-        input_sequence_u.push(Vector::new_random(q_dim) + Vector::from_element(q_dim, i as f64 * 0.05));
+    // Create a fixed, simple input sequence
+    let mut input_sequence_nalgebra_vec = Vec::new();
+    // Time step 0: input value 0.5
+    input_sequence_nalgebra_vec.push(Vector::from_vec(vec![0.5f64]));
+    // Time step 1: input value 1.0
+    input_sequence_nalgebra_vec.push(Vector::from_vec(vec![1.0f64]));
+
+    println!("Fixed Input Sequence (Nalgebra):");
+    for (i, vec) in input_sequence_nalgebra_vec.iter().enumerate() {
+        println!("  Time step {}: {:?}", i, vec.as_slice());
     }
 
-    if let Some(first_input) = input_sequence_u.first() {
-        println!("Sample Input u_0 (dim {}x{}):", first_input.nrows(), first_input.ncols());
-        for (i, val) in first_input.iter().enumerate() {
-            println!("  u_0[{}]: {:.1}", i, val);
+    if let Some(first_input) = input_sequence_nalgebra_vec.first() {
+        println!(
+            "Sample Nalgebra Input u_0 (dim {}x{}):",
+            first_input.nrows(),
+            first_input.ncols()
+        );
+    }
+
+    let batch_size = 1;
+    let mut flat_data_f32: Vec<f32> = Vec::with_capacity(batch_size * sequence_len_n * q_dim);
+    for vector_nalgebra in &input_sequence_nalgebra_vec {
+        for val in vector_nalgebra.iter() {
+            flat_data_f32.push(*val as f32);
         }
     }
-    
-    // Perform the forward pass
+
+    let tensor_shape = Shape::new([batch_size, sequence_len_n, q_dim]);
+    // Create TensorData struct
+    let tensor_data = TensorData::new(flat_data_f32, tensor_shape);
+    // Create tensor from TensorData struct
+    let model_input: Tensor<MyBackend, 3> =
+        Tensor::from_data(tensor_data.convert::<f32>(), &device);
+
+    println!(
+        "Converted input to Burn Tensor with shape: {:?}",
+        model_input.dims()
+    );
+
     println!("Performing forward pass...");
-    let output_sequence_o = linoss_model.forward(&input_sequence_u)?;
+    let output_tensor = linoss_model.forward(model_input);
     println!("Forward pass completed.");
+    println!("Output tensor shape: {:?}", output_tensor.dims());
 
-    if let Some(first_output) = output_sequence_o.first() {
-         println!("Sample Output o_0 (dim {}x{}):", first_output.nrows(), first_output.ncols());
-         for (i, val) in first_output.iter().enumerate() {
-            println!("  o_0[{}]: {:.1}", i, val);
+    // Convert Burn Tensor output back to Vec<Vector> (nalgebra) for inspection
+    // Use to_data() which returns TensorData<E, D>, then call .into_vec()
+    let output_tensor_data = output_tensor.to_data();
+    let output_data_f32: Vec<f32> = output_tensor_data.into_vec().unwrap();
+    let mut output_sequence_nalgebra_vec: Vec<Vector> = Vec::new();
+
+    for i in 0..sequence_len_n {
+        let start_index = i * output_dim;
+        let end_index = start_index + output_dim;
+        if end_index <= output_data_f32.len() {
+            let slice = &output_data_f32[start_index..end_index];
+            let nalgebra_vector_data: Vec<f64> = slice.iter().map(|&x| x as f64).collect();
+            println!(
+                "  Raw Nalgebra Output o_{} (before push): {:?}",
+                i, nalgebra_vector_data
+            );
+            output_sequence_nalgebra_vec.push(Vector::from_vec(nalgebra_vector_data));
         }
     }
-    println!("Full output sequence length: {}", output_sequence_o.len());
-    if !output_sequence_o.is_empty() {
-        assert_eq!(output_sequence_o[0].nrows(), output_dim, "Output vector dimension mismatch");
-    }
-    assert_eq!(output_sequence_o.len(), sequence_len_n, "Output sequence length mismatch");
 
-    println!("LinOSS Model Simulation End");
+    println!("Processed Output Sequence (Nalgebra):");
+    if !output_sequence_nalgebra_vec.is_empty() {
+        for (i, vec) in output_sequence_nalgebra_vec.iter().enumerate() {
+            println!("  Time step {}: {:?}", i, vec.as_slice());
+        }
+    } else {
+        println!("Output sequence is empty or conversion failed.");
+    }
+
     Ok(())
 }

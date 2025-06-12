@@ -1,0 +1,21 @@
+Mon-09Jun25-07h20m08s NL Amersfoort, springyworks
+Updated Wed-11Jun25 - Examples fixed and working
+LinOssRust project /home/rustuser/rustdev/LinossRust/LinossRust.code-workspace
+
+Important source url's 
+
+paper https://arxiv.org/html/2410.03943v2
+github https://github.com/tk-rusch/linoss python implementation
+
+rust Burn crate
+docs rs https://docs.rs/burn/latest/burn/
+github https://github.com/tracel-ai/burn
+
+local burn-linoss design document, for copilot and co
+/home/rustuser/rustdev/LinossRust/linoss_development_directive.md
+
+project status report
+/home/rustuser/rustdev/LinossRust/EXAMPLES_STATUS.md
+
+parallel scan implementation notes
+/home/rustuser/rustdev/LinossRust/parallel_scan_notes.md

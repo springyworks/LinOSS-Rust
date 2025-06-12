@@ -1,8 +1,9 @@
 pub mod activation;
+pub mod block;
+pub mod layer;
 pub mod layers;
 pub mod model;
-pub mod ode_solver;
+pub mod vis_utils;
 
-// Re-export key components for easier use from `crate::linoss::*`
-pub use model::LinossModel;
-pub use layers::LinossBlockParams;
+pub use layer::{LinossLayer, LinossLayerConfig};
+pub use model::{FullLinossModel, LinossOutput}; // Added LinossOutput to re-exports

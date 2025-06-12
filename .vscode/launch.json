@@ -2,14 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug autodiff_SSMvector",
       "type": "lldb",
       "request": "launch",
-      "name": "Debug Rust Project (LinossRust)",
-      "program": "${workspaceFolder}/target/debug/LinossRust",
+      "program": "${workspaceFolder}/target/debug/autodiff_SSMvector",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Build Rust Project (LinossRust)",
-      
+      "sourceLanguages": [
+        "rust"
+      ]
     }
   ]
 }

@@ -1,0 +1,98 @@
+[workspace]
+members = []
+
+[workspace.package]
+version = "0.2.0"
+edition = "2021"
+authors = ["LinOSS Team"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/your-repo/LinossRust"
+
+[workspace.dependencies]
+# Core ML framework
+burn = { version = "0.17.1", default-features = false, features = ["ndarray", "autodiff", "wgpu", "std"] }
+# Math and numerics
+nalgebra = { version = "0.33.2", features = ["rand"] }
+ndarray = { version = "0.16.1", default-features = false }
+num-traits = "0.2"
+# Random number generation
+rand = { version = "0.8.5", default-features = false, features = ["std_rng"] }
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+# Logging
+log = "0.4"
+env_logger = "0.11"
+# TUI and terminal
+ratatui = { version = "0.29.0", features = ["crossterm"] }
+crossterm = "0.29.0"
+# Plotting
+plotters = "0.3.6"
+plotters-ratatui-backend = "0.3.0"
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+# WASM-specific
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+js-sys = "0.3"
+web-sys = "0.3"
+console_error_panic_hook = "0.1"
+serde-wasm-bindgen = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
+libm = "0.2"
+
+[package]
+name = "linoss_rust"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+default-run = "linoss_rust"
+
+[lib]
+name = "linoss_rust"
+path = "src/lib.rs"
+
+[[bin]]
+name = "linoss_rust"
+path = "src/main.rs"
+
+[[bin]]
+name = "ratatuitest"
+path = "src/bin/ratatuitest.rs"
+
+[[bin]]
+name = "animatedRataui"
+path = "src/bin/animatedRataui.rs"
+
+[[bin]]
+name = "dlinoss_comparison"
+path = "src/bin/dlinoss_comparison.rs"
+
+[[bin]]
+name = "training_comparison"
+path = "src/bin/training_comparison.rs"
+
+[dependencies]
+burn.workspace = true
+nalgebra.workspace = true
+rand.workspace = true
+ndarray.workspace = true
+ratatui.workspace = true
+crossterm.workspace = true
+log.workspace = true
+env_logger.workspace = true
+tokio.workspace = true
+plotters.workspace = true
+plotters-ratatui-backend.workspace = true
+serde.workspace = true
+num-traits.workspace = true
+
+#dess = { path = "/home/rustuser/rustdev/de-system-solver_kos/dess", version = "0.1.0" }
+#ode_solvers = "0.6"
+
+[features]
+default = ["ndarray_backend", "wgpu_backend"]
+ndarray_backend = ["burn/ndarray", "burn/autodiff"]
+wgpu_backend = ["burn/wgpu", "burn/autodiff"]
+
+
