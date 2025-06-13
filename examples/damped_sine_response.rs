@@ -268,7 +268,7 @@ where
             return Ok(());
         }
 
-        terminal.draw(|f| ui::<RB, AB>(f, app))?;
+        terminal.draw(|f| ui(f, app))?;
 
         let timeout = tick_rate
             .checked_sub(last_tick.elapsed())
@@ -290,7 +290,7 @@ where
 }
 
 // UI rendering function
-fn ui<RB: RatatuiBackend, AB: AutodiffBackend>(f: &mut Frame<'_>, app: &DampedSineApp<AB>) 
+fn ui<AB: AutodiffBackend>(f: &mut Frame<'_>, app: &DampedSineApp<AB>) 
 where
     AB::FloatElem: From<f32> + std::ops::Mul<Output = AB::FloatElem> + Copy + ElementConversion + num_traits::FloatConst,
 {

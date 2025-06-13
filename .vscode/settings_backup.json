@@ -1,0 +1,62 @@
+{
+    "workbench.colorCustomizations": {
+        "editor.background": "#010101",
+        "activityBar.background": "#322E08",
+        "titleBar.activeBackground": "#46410C",
+        "titleBar.activeForeground": "#FCFAEC"
+    },
+    "files.readonlyInclude": {
+        "/home/rustuser/.vscode-insiders/extensions/secure-dev-ops.code-realtime-ce-2.0.7/**/*": true
+    },
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none"
+    },
+    
+    // === AI Performance Monitoring & Copilot Configuration ===
+    "github.copilot.enable": true,
+    "github.copilot.chat.enable": true,
+    "github.copilot.advanced.length": 750,
+    "github.copilot.advanced.temperature": 0.5,
+    "github.copilot.advanced.listCount": 10,
+    "github.copilot.editor.enableAutoCompletions": true,
+    "github.copilot.editor.enableCodeActions": true,
+    
+    // Adaptive settings based on AI server performance windows
+    // Peak hours (08:00-10:00, 13:00-15:00, 19:00-21:00 CET): Conservative settings
+    // Optimal hours (05:00-08:00, 21:00-23:00 weekdays, 06:00-22:00 weekends): Enhanced settings
+    // Moderate hours (other times): Standard settings
+    
+    "github.copilot.chat.localeOverride": "en",
+    "github.copilot.chat.useProjectTemplates": true,
+    
+    // Rust & Burn-specific Copilot guidance
+    "github.copilot.advanced.debug.overrideEngine": "codex",
+    "github.copilot.advanced.debug.overrideProxyUrl": "",
+    "github.copilot.advanced.debug.testOverrideProxyUrl": "",
+    
+    // Status bar integration for performance monitoring
+    "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}[AI-Performance: ${aiPerformanceWindow}]",
+    
+    // Custom user snippets for Burn library guidance
+    "rust-analyzer.assist.importGranularity": "module",
+    "rust-analyzer.checkOnSave.command": "clippy",
+    "rust-analyzer.completion.addCallParenthesis": true,
+    
+    // AI performance monitoring notification settings
+    "workbench.statusBar.visible": true,
+    "workbench.editor.showTabs": true,
+    
+    // Time-based settings override (manual configuration for now)
+    // TODO: Implement extension for automatic switching based on copilot-performance.json
+    "aiPerformanceMonitoring.enabled": true,
+    "aiPerformanceMonitoring.timezone": "Europe/Amsterdam",
+    "aiPerformanceMonitoring.showAlerts": true,
+    "aiPerformanceMonitoring.autoSwitchSettings": false,
+    
+    // Development workflow optimization
+    "files.autoSave": "onWindowChange",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    }
+}

@@ -1,11 +1,10 @@
 // examples/burn_iris_loader.rs
 // Minimal example: Load iris_features.npy and iris_labels.npy, wrap as Burn dataset, use DataLoader
 
-use burn::data::dataloader::{DataLoader, Dataset};
+use burn::data::dataloader::Dataset;
 use burn::backend::ndarray::{NdArray, NdArrayDevice};
 use burn::tensor::Tensor;
 use ndarray_npy::read_npy;
-use std::path::Path;
 use std::sync::Arc;
 
 // Custom dataset struct for Burn
@@ -66,18 +65,20 @@ fn main() -> anyhow::Result<()> {
     let dataset = IrisDataset {
         features: Arc::new(features_vec),
         labels: Arc::new(labels_vec),
-        device: device.clone(),
+        device,
     };
 
     let batch_size = 16;
-    let num_batches = (dataset.len() + batch_size - 1) / batch_size;
+    let num_batches = dataset.len().div_ceil(batch_size);
     for batch_idx in 0..num_batches.min(1) { // Only print first batch
         let start = batch_idx * batch_size;
         let end = ((batch_idx + 1) * batch_size).min(dataset.len());
         let mut xs = Vec::new();
         let mut ys = Vec::new();
         for i in start..end {
-            let (x, y) = dataset.get(i).unwrap();
+            let (x, y) = dataset.get(i).ok_or_else(|| {
+                anyhow::anyhow!("Failed to get dataset item at index {}", i)
+            })?;
             xs.push(x);
             ys.push(y);
         }
@@ -86,8 +87,12 @@ fn main() -> anyhow::Result<()> {
         let y_batch = Tensor::cat(ys, 0);
         let x0_data = x_batch.clone().slice([0]).to_data();
         let y0_data = y_batch.clone().slice([0]).to_data();
-        let x0_vec: Vec<f32> = x0_data.convert::<f32>().into_vec().unwrap();
-        let y0_vec: Vec<u8> = y0_data.convert::<u8>().into_vec().unwrap();
+        let x0_vec: Vec<f32> = x0_data.convert::<f32>().into_vec().map_err(|e| {
+            anyhow::anyhow!("Failed to convert x0_data to Vec<f32>: {:?}", e)
+        })?;
+        let y0_vec: Vec<u8> = y0_data.convert::<u8>().into_vec().map_err(|e| {
+            anyhow::anyhow!("Failed to convert y0_data to Vec<u8>: {:?}", e)
+        })?;
         println!("Batch {batch_idx}: x shape = {:?}, y shape = {:?}", x_batch.shape(), y_batch.shape());
         println!("x[0] = {:?}, y[0] = {:?}", x0_vec, y0_vec);
     }

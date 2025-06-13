@@ -144,6 +144,7 @@ fn main() -> Result<()> {
         for i in (0..n_samples).step_by(batch_size) {
             let end = (i + batch_size).min(n_samples);
             let xb = x.clone().slice([i..end, 0..input_dim]);
+            #[allow(clippy::single_range_in_vec_init)]
             let yb = y.clone().slice([i..end]);
             
             // Burn expects 2D labels for cross_entropy_with_logits
@@ -181,6 +182,7 @@ fn main() -> Result<()> {
     
     // Test with first few samples
     let test_x = x.clone().slice([0..3, 0..input_dim]);
+    #[allow(clippy::single_range_in_vec_init)]
     let test_y = y.clone().slice([0..3]);
     
     let predictions = loaded_model.forward(test_x);

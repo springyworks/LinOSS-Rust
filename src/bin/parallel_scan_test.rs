@@ -95,9 +95,9 @@ impl<B: Backend> RecurrencePair<B> {
         let mut result = Vec::with_capacity(seq_len);
         let initial_state = initial_x.clone();
         
-        for i in 0..seq_len {
-            let x_i = prefix_pairs[i].matrix_m.clone().matmul(initial_state.clone()) + 
-                      prefix_pairs[i].vector_f.clone();
+        for prefix_pair in prefix_pairs.iter().take(seq_len) {
+            let x_i = prefix_pair.matrix_m.clone().matmul(initial_state.clone()) + 
+                      prefix_pair.vector_f.clone();
             result.push(x_i);
         }
         
@@ -137,9 +137,9 @@ impl<B: Backend> RecurrencePair<B> {
         let mut result = Vec::with_capacity(seq_len);
         let initial_state = initial_x.clone();
         
-        for i in 0..seq_len {
-            let x_i = prefix_pairs[i].matrix_m.clone().matmul(initial_state.clone()) + 
-                     prefix_pairs[i].vector_f.clone();
+        for prefix_pair in prefix_pairs.iter().take(seq_len) {
+            let x_i = prefix_pair.matrix_m.clone().matmul(initial_state.clone()) + 
+                     prefix_pair.vector_f.clone();
             result.push(x_i);
         }
         

@@ -64,7 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let matrix_block = Block::default().title(title).borders(Borders::ALL);
                 let rows = matrix_data.rows().into_iter().map(|row_data| {
                     let cells = row_data.iter().map(|&val| {
-                        let color_index = ((val - 1).abs() as usize) % DISTINCT_COLORS.len();
+                        let color_index = ((val - 1).unsigned_abs() as usize) % DISTINCT_COLORS.len();
                         let color = DISTINCT_COLORS[color_index];
                         let span = Span::raw(format!("[{:>3}]", val));
                         Cell::from(span).style(Style::default().bg(color))
@@ -196,30 +196,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        if last_update_time.elapsed() >= update_interval {
-            if !matrices.is_empty() {
-                // Example: Randomly pick a matrix and change one of its values
-                let mut rng = thread_rng(); // Now thread_rng is in scope
-                let matrix_idx_to_change = rng.gen_range(0..matrices.len());
-                let row_idx = rng.gen_range(0..MATRIX_ROWS);
-                let col_idx = rng.gen_range(0..MATRIX_COLS);
-                matrices[matrix_idx_to_change][(row_idx, col_idx)] = rng.gen_range(0..100);
-                last_update_time = Instant::now(); 
-            }
+        if last_update_time.elapsed() >= update_interval && !matrices.is_empty() {
+            // Example: Randomly pick a matrix and change one of its values
+            let mut rng = thread_rng(); // Now thread_rng is in scope
+            let matrix_idx_to_change = rng.gen_range(0..matrices.len());
+            let row_idx = rng.gen_range(0..MATRIX_ROWS);
+            let col_idx = rng.gen_range(0..MATRIX_COLS);
+            matrices[matrix_idx_to_change][(row_idx, col_idx)] = rng.gen_range(0..100);
+            last_update_time = Instant::now(); 
         }
 
         if poll(Duration::from_millis(100))? { 
             let event_read = event::read()?; 
 
             match event_read {
-                Event::Mouse(MouseEvent { kind, column, row, .. }) => {
-                    if let MouseEventKind::Down(_button) = kind {
-                        if popup_message.is_some() {
-                            popup_message = None; 
-                        } else {
-                            let mut clicked_on_matrix: Option<(usize, usize, usize, i32)> = None; 
+                Event::Mouse(MouseEvent { kind: MouseEventKind::Down(_button), column, row, .. }) => {
+                    if popup_message.is_some() {
+                        popup_message = None; 
+                    } else {
+                        let mut clicked_on_matrix: Option<(usize, usize, usize, i32)> = None;
 
-                            for matrix_idx in 0..NUM_MATRICES {
+                        for matrix_idx in 0..NUM_MATRICES {
                                 if let Some(matrix_area_for_click) = last_matrix_areas[matrix_idx] {
                                     if column >= matrix_area_for_click.x && column < matrix_area_for_click.x + matrix_area_for_click.width &&
                                        row >= matrix_area_for_click.y && row < matrix_area_for_click.y + matrix_area_for_click.height {
@@ -259,14 +256,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 }
                             }
 
-                            if let Some((matrix_display_idx, c_y, c_x, val)) = clicked_on_matrix {
-                                let msg_content = format!("Matrix {}, Cell ({}, {}) clicked!\nValue: {}", matrix_display_idx, c_y, c_x, val);
-                                popup_message = Some(msg_content);
-                            } else {
-                                if popup_message.is_some() { popup_message = None; }
-                            }
+                        if let Some((matrix_display_idx, c_y, c_x, val)) = clicked_on_matrix {
+                            let msg_content = format!("Matrix {}, Cell ({}, {}) clicked!\nValue: {}", matrix_display_idx, c_y, c_x, val);
+                            popup_message = Some(msg_content);
+                        } else if popup_message.is_some() { 
+                            popup_message = None; 
                         }
                     }
+                }
+                Event::Mouse(_) => {
+                    // Handle other mouse events (non-click)
                 }
                 Event::Key(key) => {
                     if key.code == KeyCode::Esc || key.code == KeyCode::Char('q') {
@@ -277,17 +276,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
 
-                    if key.code == KeyCode::Char('u') {
-                        if !matrices.is_empty() {
-                            let mut rng = thread_rng(); 
-                            let value_dist = Uniform::new(0, 100); 
-                            for r_idx in 0..MATRIX_ROWS {
-                                for c_idx in 0..MATRIX_COLS {
-                                    matrices[0][(r_idx, c_idx)] = rng.sample(value_dist);
-                                }
+                    if key.code == KeyCode::Char('u') && !matrices.is_empty() {
+                        let mut rng = thread_rng(); 
+                        let value_dist = Uniform::new(0, 100); 
+                        for r_idx in 0..MATRIX_ROWS {
+                            for c_idx in 0..MATRIX_COLS {
+                                matrices[0][(r_idx, c_idx)] = rng.sample(value_dist);
                             }
-                            popup_message = Some("Matrix 0 manually updated!".to_string());
                         }
+                        popup_message = Some("Matrix 0 manually updated!".to_string());
                     }
 
                     if popup_message.is_some() && (key.code != KeyCode::Char('u') || quit_app) {

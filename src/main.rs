@@ -60,11 +60,10 @@ fn main() -> Result<(), LinossError> {
     println!("LinossModel instance created.");
 
     // Create a fixed, simple input sequence
-    let mut input_sequence_nalgebra_vec = Vec::new();
-    // Time step 0: input value 0.5
-    input_sequence_nalgebra_vec.push(Vector::from_vec(vec![0.5f64]));
-    // Time step 1: input value 1.0
-    input_sequence_nalgebra_vec.push(Vector::from_vec(vec![1.0f64]));
+    let input_sequence_nalgebra_vec = vec![
+        Vector::from_vec(vec![0.5f64]), // Time step 0: input value 0.5
+        Vector::from_vec(vec![1.0f64]),  // Time step 1: input value 1.0
+    ];
 
     println!("Fixed Input Sequence (Nalgebra):");
     for (i, vec) in input_sequence_nalgebra_vec.iter().enumerate() {

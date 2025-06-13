@@ -1,0 +1,19 @@
+warning: unused import: `linoss_rust::linoss::*`
+ --> examples/parallel_scan_test.rs:4:5
+  |
+4 | use linoss_rust::linoss::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: constant `NUM_ATTRACTORS` is never used
+  --> examples/multi_lorenz_brain_dynamics.rs:67:7
+   |
+67 | const NUM_ATTRACTORS: usize = 3; // Number of brain regions/circuits
+   |       ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `linoss_rust` (example "parallel_scan_test") generated 1 warning (run `cargo fix --example "parallel_scan_test"` to apply 1 suggestion)
+warning: `linoss_rust` (example "multi_lorenz_brain_dynamics") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.62s

@@ -116,7 +116,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mse: f32 = test_targets.iter().zip(pred_data.iter())
         .map(|(t, p)| {
-            let diff = *t as f32 - *p as f32;
+            let diff = *t - *p;
             diff.powi(2)
         })
         .sum::<f32>() / test_targets.len() as f32;

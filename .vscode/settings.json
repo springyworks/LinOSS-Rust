@@ -10,5 +10,36 @@
     },
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingModuleSource": "none"
+    },
+    "github.copilot.enable": {
+        "*": true,
+        "yaml": false,
+        "plaintext": false
+    },
+    "github.copilot.chat.enable": true,
+    "github.copilot.advanced.length": 750,
+    "github.copilot.advanced.temperature": 0.5,
+    "github.copilot.advanced.listCount": 10,
+    "github.copilot.editor.enableCodeActions": true,
+    "github.copilot.chat.localeOverride": "en",
+    "github.copilot.chat.useProjectTemplates": true,
+    "github.copilot.advanced.debug.overrideEngine": "codex",
+    "github.copilot.advanced.debug.overrideProxyUrl": "",
+    "github.copilot.advanced.debug.testOverrideProxyUrl": "",
+    "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}[AI: MODERATE]",
+    "rust-analyzer.assist.importGranularity": "module",
+    "rust-analyzer.checkOnSave": true,
+    "rust-analyzer.check.command": "clippy",
+    "rust-analyzer.completion.addCallParenthesis": true,
+    "workbench.statusBar.visible": true,
+    "workbench.editor.showTabs": "multiple",
+    "aiPerformanceMonitoring.enabled": true,
+    "aiPerformanceMonitoring.timezone": "Europe/Amsterdam",
+    "aiPerformanceMonitoring.showAlerts": true,
+    "aiPerformanceMonitoring.autoSwitchSettings": false,
+    "files.autoSave": "onWindowChange",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
     }
 }

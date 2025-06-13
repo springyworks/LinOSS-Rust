@@ -6,7 +6,6 @@ use ndarray_npy::write_npy;
 use anyhow::Result;
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
 
 /// Generate synthetic classification dataset with controllable characteristics
 fn generate_synthetic_classification_dataset(
@@ -15,17 +14,8 @@ fn generate_synthetic_classification_dataset(
     n_classes: usize,
     class_separation: f32,
     noise_level: f32,
-    random_seed: u64,
+    _random_seed: u64, // Prefix with underscore to suppress unused warning
 ) -> (Array2<f32>, Array1<u8>) {
-    // Use a simple deterministic pseudo-random generator for reproducibility
-    let mut rng_state = random_seed;
-    
-    // Simple LCG (Linear Congruential Generator) for deterministic randomness
-    let mut next_random = move || {
-        rng_state = rng_state.wrapping_mul(1103515245).wrapping_add(12345);
-        (rng_state / 65536) % 32768
-    };
-    
     let mut features = Array2::<f32>::zeros((n_samples, n_features));
     let mut labels = Array1::<u8>::zeros(n_samples);
     
@@ -110,6 +100,7 @@ fn save_dataset_npy(
 }
 
 /// Generate dataset metadata file
+#[allow(clippy::too_many_arguments)]
 fn save_dataset_info(
     filepath: &str,
     dataset_name: &str,

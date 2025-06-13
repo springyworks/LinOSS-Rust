@@ -223,14 +223,12 @@ impl TokioTuiApp for AppState {
         // Recalculate vertical center and clamp
         if (height as f64) < 2.0 * safe_margin_for_center_y {
             self.center_y = height as f64 / 2.0;
+        } else if self.center_y == 0.0 { // First time initialization or coming from a very small height
+            self.center_y = height as f64 / 2.0;
         } else {
-            if self.center_y == 0.0 { // First time initialization or coming from a very small height
-                self.center_y = height as f64 / 2.0;
-            } else {
-                self.center_y = self.center_y
-                    .max(safe_margin_for_center_y)
-                    .min(height as f64 - safe_margin_for_center_y);
-            }
+            self.center_y = self.center_y
+                .max(safe_margin_for_center_y)
+                .min(height as f64 - safe_margin_for_center_y);
         }
 
         // Recalculate horizontal center and target

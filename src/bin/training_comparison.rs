@@ -30,8 +30,8 @@ fn generate_sine_wave_task<B: Backend>(
     let mut targets = Vec::new();
     
     for _ in 0..num_batches {
-        let mut input_data = vec![0.0; batch_size * seq_len * 1];
-        let mut target_data = vec![0.0; batch_size * seq_len * 1];
+        let mut input_data = vec![0.0; batch_size * seq_len];
+        let mut target_data = vec![0.0; batch_size * seq_len];
         
         for b in 0..batch_size {
             let freq_val: f32 = rng.gen();

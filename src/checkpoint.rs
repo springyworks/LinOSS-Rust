@@ -146,6 +146,7 @@ where
         for i in (0..n_samples).step_by(batch_size) {
             let end = (i + batch_size).min(n_samples);
             let xb = x.clone().slice([i..end, 0..input_dim]);
+            #[allow(clippy::single_range_in_vec_init)]
             let yb = y.clone().slice([i..end]);
             let yb2 = yb.unsqueeze_dim(1);
             

@@ -1,0 +1,35 @@
+   Compiling linoss_rust v0.2.0 (/home/rustuser/rustdev/LinossRust)
+warning: unused import: `std::path::Path`
+ --> src/bin/generate_synthetic_datasets.rs:9:5
+  |
+9 | use std::path::Path;
+  |     ^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `next_random`
+  --> src/bin/generate_synthetic_datasets.rs:24:13
+   |
+24 |     let mut next_random = move || {
+   |             ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_next_random`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> src/bin/generate_synthetic_datasets.rs:24:9
+   |
+24 |     let mut next_random = move || {
+   |         ----^^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: `linoss_rust` (bin "generate_synthetic_datasets" test) generated 3 warnings (run `cargo fix --bin "generate_synthetic_datasets" --tests` to apply 2 suggestions)
+error[E0601]: `main` function not found in crate `parallel_scan_test`
+  |
+  = note: consider adding a `main` function to `examples/parallel_scan_test.rs`
+
+For more information about this error, try `rustc --explain E0601`.
+error: could not compile `linoss_rust` (example "parallel_scan_test") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -2,6 +2,8 @@
 // Based on "Learning to Dissipate Energy in Oscillatory State-Space Models" 
 // Jared Boyer, T. Konstantin Rusch, Daniela Rus (arXiv:2505.12171, 2025)
 
+#![allow(clippy::too_many_arguments)]
+
 use burn::{
     config::Config,
     module::Module,

@@ -99,7 +99,7 @@ impl TrainingApp {
             .split(f.area());
 
         // Loss Chart
-        let loss_values_f64: Vec<(f64, f64)> = app.loss_data.iter().cloned().collect::<Vec<(f64,f64)>>();
+        let loss_values_f64: Vec<(f64, f64)> = app.loss_data.to_vec();
         let datasets = vec![Dataset::default()
             .name("Loss")
             .marker(symbols::Marker::Dot)
@@ -218,7 +218,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let training_thread_tx_event = tx_event.clone();
     let training_thread_tx_model_result = tx_model_result.clone();
     let training_thread_model = initial_model.clone();
-    let training_thread_device = device.clone();
+    let training_thread_device = device;
 
     let training_handle = thread::spawn(move || {
         let mut model = training_thread_model;

@@ -117,7 +117,7 @@ fn test_dataset(
     let input_dim = features.shape()[1];
     let num_classes = labels.iter().max().unwrap_or(&0) + 1;
     let hidden_dim = (input_dim * 2).max(8); // Adaptive hidden size
-    let batch_size = (n_samples / 4).max(4).min(16); // Adaptive batch size
+    let batch_size = (n_samples / 4).clamp(4, 16); // Adaptive batch size
     let lr = 1e-2;
     
     println!("   Classes: {}, Hidden dim: {}, Batch size: {}", num_classes, hidden_dim, batch_size);
@@ -148,6 +148,7 @@ fn test_dataset(
         for i in (0..n_samples).step_by(batch_size) {
             let end = (i + batch_size).min(n_samples);
             let xb = x.clone().slice([i..end, 0..input_dim]);
+            #[allow(clippy::single_range_in_vec_init)]
             let yb = y.clone().slice([i..end]);
             
             // Burn expects 2D labels for cross_entropy_with_logits

@@ -164,6 +164,7 @@ fn train_model(
         for i in (0..n_samples).step_by(batch_size) {
             let end = (i + batch_size).min(n_samples);
             let xb = features.clone().slice([i..end, 0..input_dim]);
+            #[allow(clippy::single_range_in_vec_init)]
             let yb = labels.clone().slice([i..end]);
             
             // Burn expects 2D labels for cross_entropy_with_logits

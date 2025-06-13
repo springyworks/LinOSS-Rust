@@ -29,11 +29,12 @@ ratatui = { version = "0.29.0", features = ["crossterm"] }
 crossterm = "0.29.0"
 log = "0.4"
 env_logger = "0.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 plotters = "0.3.6"
 plotters-ratatui-backend = "0.3.0" # Corrected to plotters-ratatui-backend
 num-traits = "0.2" # Added num-traits
-serde = { version = "1.0", features = ["derive"] }
 ndarray-npy = "0.9.1"
 anyhow = "1.0"
 
@@ -47,5 +48,35 @@ tempfile = "3.0"
 default = ["ndarray_backend", "wgpu_backend"]
 ndarray_backend = ["burn/ndarray", "burn/autodiff"]
 wgpu_backend = ["burn/wgpu", "burn/autodiff"]
+
+# Custom build profiles for development optimization
+[profile.dev]
+# Debug builds (default) - fast compilation, large binaries, debug info
+opt-level = 0          # No optimization
+debug = true           # Include debug info
+split-debuginfo = "unpacked"  # Faster linking on Linux
+
+[profile.dev-opt]
+# Development with some optimization - balanced speed/performance
+inherits = "dev"
+opt-level = 1          # Basic optimization
+debug = true
+incremental = true     # Enable incremental compilation
+
+[profile.release]
+# Full release optimization - slow compilation, small fast binaries
+opt-level = 3          # Full optimization
+debug = false          # No debug info
+lto = true            # Link-time optimization (slow but effective)
+codegen-units = 1     # Better optimization, slower compilation
+panic = "abort"       # Smaller binaries
+
+[profile.fast-release]
+# Quick release - faster compilation with good optimization
+inherits = "release"
+opt-level = 2         # Good optimization, faster than level 3
+lto = "thin"         # Faster LTO
+codegen-units = 4    # Parallel compilation
+debug = false
 
 
