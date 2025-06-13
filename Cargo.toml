@@ -37,6 +37,9 @@ serde = { version = "1.0", features = ["derive"] }
 ndarray-npy = "0.9.1"
 anyhow = "1.0"
 
+[dev-dependencies]
+tempfile = "3.0"
+
 #dess = { path = "/home/rustuser/rustdev/de-system-solver_kos/dess", version = "0.1.0" }
 #ode_solvers = "0.6"
 

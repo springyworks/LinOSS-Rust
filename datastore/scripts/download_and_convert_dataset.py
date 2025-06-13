@@ -24,8 +24,10 @@ import argparse
 import shutil
 import json
 
-default_download_dir = "/home/rustuser/rustdev/LinossRust/datastore/downloads-of-datasets"
-default_processed_dir = "/home/rustuser/rustdev/LinossRust/datastore/processed-by-python"
+# Get the datastore directory (parent of this script's directory)
+DATASTORE_DIR = os.path.dirname(os.path.abspath(__file__))
+default_download_dir = os.path.join(DATASTORE_DIR, "downloads-of-datasets")
+default_processed_dir = os.path.join(DATASTORE_DIR, "processed-by-python")
 
 def smart_copy_to_processed(arr_path, processed_dir):
     os.makedirs(processed_dir, exist_ok=True)
@@ -146,8 +148,8 @@ def main():
 
     if args.example or args.demo:
         print("\nExample usage:")
-        print("  python3 scripts/download_and_convert_dataset.py --urls https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data --processed_dir ./datastore/processed-by-python")
-        print("  python3 scripts/download_and_convert_dataset.py --input_dir ./datastore/downloads-of-datasets --processed_dir ./datastore/processed-by-python")
+        print("  python3 datastore/scripts/download_and_convert_dataset.py --urls https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")
+        print("  python3 datastore/scripts/download_and_convert_dataset.py --input_dir ./datastore/downloads-of-datasets --processed_dir ./datastore/processed-by-python")
         print("\nExpected output: .npy files in the processed directory, with features as float32 and labels as uint8.")
         print("\nFor more info, run with -h or --help.")
         exit(0)
