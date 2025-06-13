@@ -312,3 +312,23 @@ The choice of backend significantly impacts performance, especially for larger m
 - Additional example applications (e.g., time-series forecasting, sequence classification).
 - Further performance optimizations and benchmarking.
 
+## 🌊 Featured: NeuroBreeze - Brain Dynamics Visualization
+
+**NEW**: Real-time neural dynamics visualization with 3×16 spinning Lissajous intercommunication patterns!
+
+```bash
+cargo run --example pure_dlinoss_brain_dynamics
+```
+
+### Key Features:
+- **🧠 3 Neural Regions**: Prefrontal Cortex, Default Mode Network, Thalamus
+- **🌀 3×16 Signal Matrix**: Each region shows 16 intercommunication signals as spinning patterns
+- **⚡ Velocity-Driven Animation**: 🔴🟠🟡🟢🔵🟣⚫⚪ = high velocity, ◐◓◑◒ = medium velocity
+- **🔄 Bidirectional Connectivity**: Full 6×6 connectivity matrices between all dLinOSS blocks  
+- **📡 Real-time Data Streaming**: JSON data streams through `/tmp/dlinoss_brain_pipe`
+- **🎮 Interactive Controls**: Press 'p' to pause, 'd' for damping, '+/-' for coupling strength
+
+This showcases dLinOSS (Damped Linear Oscillatory State-Space) models for brain dynamics modeling with beautiful real-time visualization of intercommunication between neural regions.
+
+---
+

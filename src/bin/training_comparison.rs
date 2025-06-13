@@ -14,7 +14,7 @@ use burn::backend::wgpu::{Wgpu, WgpuDevice};
 
 use linoss_rust::linoss::{
     layer::{LinossLayer, LinossLayerConfig},
-    dlinoss_layer::{DLinossLayer, DLinossLayerConfig},
+    dlinoss_layer::{AParameterization, DLinossLayer, DLinossLayerConfig},
 };
 use rand::{Rng, SeedableRng, rngs::StdRng};
 
@@ -119,6 +119,7 @@ where
         enable_damping: true,
         init_damping: 0.1,
         num_damping_scales: 2,
+        a_parameterization: AParameterization::ReLU, // Add the missing field
     };
     
     println!("Testing forward pass stability...");

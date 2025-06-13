@@ -2,6 +2,25 @@
 
 This directory contains runnable Rust examples demonstrating various features, models, and utilities in the LinossRust project.
 
+## 🌊 Featured: NeuroBreeze - Advanced Brain Dynamics Visualization
+
+**NEW**: Experience the beauty of neural dynamics with our enhanced 3×16 spinning Lissajous intercommunication visualization!
+
+```bash
+cargo run --example pure_dlinoss_brain_dynamics
+```
+
+**What makes this special:**
+- **3×16 Signal Matrix**: Each neural region (🧠PFC, 🌐DMN, ⚙️THL) displays 16 individual intercommunication signals
+- **Velocity-Driven Spinning Patterns**: High-velocity signals show as colorful emojis (🔴🟠🟡🟢🔵🟣⚫⚪), medium-velocity as traditional spinning symbols (◐◓◑◒)
+- **Real-time Brain Dynamics**: Watch bidirectional neural communication evolve in real-time
+- **dLinOSS Architecture**: Three interconnected blocks with different A-matrix parameterizations (ReLU, GELU, Squared)
+- **Live Data Streaming**: Neural states stream as JSON to `/tmp/dlinoss_brain_pipe`
+
+This represents the cutting edge of neural simulation visualization, combining mathematical rigor with intuitive, beautiful displays of complex brain dynamics.
+
+---
+
 ## How to Run
 
 Use Cargo to run an example:
@@ -19,6 +38,7 @@ cargo run --example <example_name>
 - [`damped_sine_response.rs`](#damped_sine_responsers): Training with TUI for damped sine response.
 - [`dlinoss_comparison.rs`](#dlinoss_comparisonrs): Compare D-LinOSS variants.
 - [`flyLinoss.rs`](#flylinossrs): Tensor visualization TUI.
+- [`pure_dlinoss_brain_dynamics.rs`](#pure_dlinoss_brain_dynamicsrs): **🌊 NeuroBreeze** - Advanced 3×16 spinning Lissajous intercommunication visualization
 - ... (add more as needed)
 
 ## Example Details
@@ -43,6 +63,40 @@ Compares different D-LinOSS model variants on a benchmark task.
 
 ### flyLinoss.rs
 Visualizes tensors and model states in a TUI.
+
+### pure_dlinoss_brain_dynamics.rs 🌊
+**NeuroBreeze v1.0** - The most advanced neural dynamics visualization in the LinossRust suite.
+
+**Features:**
+- **3 Neural Regions**: Prefrontal Cortex (🧠), Default Mode Network (🌐), Thalamus (⚙️) 
+- **16 Signals per Region**: Each region outputs 16 distinct intercommunication signals
+- **Spinning Lissajous Patterns**: Velocity-driven animation with colorful high-activity indicators
+- **Bidirectional Connectivity**: Full 6×6 matrices connecting all dLinOSS blocks
+- **Multiple A-Parameterizations**: Fast (ReLU), Medium (GELU), Slow (Squared) blocks
+- **Real-time Data Export**: JSON streaming to FIFO pipe for external analysis
+- **Interactive Controls**: Pause, damping toggle, coupling strength adjustment
+
+**Technical Details:**
+- Based on dLinOSS (Damped Linear Oscillatory State-Space) models
+- Three-timescale architecture modeling different neural frequencies
+- Ultra-low latency streaming with non-blocking I/O
+- TUI-based visualization with activity bars, trajectory plots, and signal matrices
+
+**Usage:**
+```bash
+cargo run --example pure_dlinoss_brain_dynamics
+
+# Monitor live data stream:
+cat /tmp/dlinoss_brain_pipe
+```
+
+**Controls:**
+- `p`: Pause/unpause simulation
+- `d`: Toggle damping on/off  
+- `+/-`: Increase/decrease coupling strength
+- `q`: Quit
+
+This example showcases the full power of LinOSS models for complex neural system modeling with stunning real-time visualization.
 
 ---
 

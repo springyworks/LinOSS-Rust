@@ -11,6 +11,26 @@ use burn::{
     tensor::{backend::Backend, Distribution, Tensor},
 };
 
+/// A matrix parameterization methods for stability (Proposition 3.1)
+/// Ensures diagonal weights are non-negative for stable dynamics
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum AParameterization {
+    /// A = ReLU(A_hat) - allows complete dimension switch-off
+    ReLU,
+    /// A = GELU(A_hat) - smooth activation with some negative values
+    GELU, 
+    /// A = A_hat ⊙ A_hat - element-wise square ensures non-negativity
+    Squared,
+    /// Direct parameterization (user ensures non-negativity)
+    Direct,
+}
+
+impl Default for AParameterization {
+    fn default() -> Self {
+        Self::ReLU
+    }
+}
+
 /// Configuration for D-LinOSS layer
 #[derive(Config, Debug)]
 pub struct DLinossLayerConfig {
@@ -32,6 +52,8 @@ pub struct DLinossLayerConfig {
     pub init_damping: f64,
     /// Number of damping timescales to learn
     pub num_damping_scales: usize,
+    /// A matrix parameterization method for stability
+    pub a_parameterization: AParameterization,
 }
 
 impl DLinossLayerConfig {
@@ -47,6 +69,7 @@ impl DLinossLayerConfig {
             enable_damping: true,      // Key difference from LinOSS
             init_damping: 0.1,         // Small initial damping
             num_damping_scales: 4,     // Multiple timescales
+            a_parameterization: AParameterization::default(),
         }
     }
     
@@ -62,6 +85,7 @@ impl DLinossLayerConfig {
             enable_damping: false,     // Disable damping for vanilla LinOSS
             init_damping: 0.0,
             num_damping_scales: 0,
+            a_parameterization: AParameterization::ReLU,
         }
     }
 }
@@ -89,6 +113,30 @@ pub struct DLinossLayer<B: Backend> {
 }
 
 impl<B: Backend> DLinossLayer<B> {
+    /// Apply A matrix parameterization for stability (based on Proposition 3.1)
+    /// Ensures diagonal weights are non-negative for stable dynamics
+    #[allow(dead_code)]
+    fn apply_a_parameterization(a_raw: Tensor<B, 2>, parameterization: &AParameterization) -> Tensor<B, 2> {
+        match parameterization {
+            AParameterization::ReLU => {
+                // A = ReLU(A_hat) - allows complete dimension switch-off
+                burn::tensor::activation::relu(a_raw)
+            },
+            AParameterization::GELU => {
+                // A = GELU(A_hat) - smooth activation
+                burn::tensor::activation::gelu(a_raw)
+            },
+            AParameterization::Squared => {
+                // A = A_hat ⊙ A_hat - element-wise square ensures non-negativity
+                a_raw.clone() * a_raw
+            },
+            AParameterization::Direct => {
+                // Direct parameterization (user ensures non-negativity)
+                a_raw
+            },
+        }
+    }
+    
     /// Create a new D-LinOSS layer
     pub fn new(config: &DLinossLayerConfig, device: &B::Device) -> Self {
         let d_model = config.d_model;

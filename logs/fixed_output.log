@@ -1,6 +1,0 @@
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.24s
-     Running `target/debug/examples/burn_iris_loader`
-Error: I/O error: No such file or directory (os error 2)
-
-Caused by:
-    No such file or directory (os error 2)
