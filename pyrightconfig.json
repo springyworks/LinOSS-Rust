@@ -1,0 +1,10 @@
+{
+    "pythonPath": "python3",
+    "extraPaths": [
+        "/home/rustuser/pyth/linoss_kos",
+        "/home/rustuser/pyth/dlinoss"
+    ],
+    "typeCheckingMode": "basic",
+    "reportMissingImports": "information",
+    "reportMissingModuleSource": "none"
+}

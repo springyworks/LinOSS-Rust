@@ -21,7 +21,13 @@ name = "train_linoss"
 path = "examples/train_linoss.rs"
 
 [dependencies]
-burn       = { version = "0.17.1", features = ["ndarray", "autodiff", "wgpu", "std", "dataset"] }
+burn = { version = "0.17.1", features = [
+    "ndarray",
+    "autodiff",
+    "wgpu",
+    "std",
+    "dataset",
+] }
 nalgebra = { version = "0.33.2", features = ["rand"] }
 rand = { version = "0.8.5", features = ["std_rng"] }
 ndarray = "0.16"
@@ -37,7 +43,8 @@ plotters-ratatui-backend = "0.3.0" # Corrected to plotters-ratatui-backend
 num-traits = "0.2" # Added num-traits
 ndarray-npy = "0.9.1"
 anyhow = "1.0"
-libc = "0.2"  # For low-level system calls and O_NONBLOCK
+libc = "0.2" # For low-level system calls and O_NONBLOCK
+ctrlc = "3.4" # For signal handling
 
 [dev-dependencies]
 tempfile = "3.0"
@@ -53,31 +60,29 @@ wgpu_backend = ["burn/wgpu", "burn/autodiff"]
 # Custom build profiles for development optimization
 [profile.dev]
 # Debug builds (default) - fast compilation, large binaries, debug info
-opt-level = 0          # No optimization
-debug = true           # Include debug info
-split-debuginfo = "unpacked"  # Faster linking on Linux
+opt-level = 0                # No optimization
+debug = true                 # Include debug info
+split-debuginfo = "unpacked" # Faster linking on Linux
 
 [profile.dev-opt]
 # Development with some optimization - balanced speed/performance
 inherits = "dev"
-opt-level = 1          # Basic optimization
+opt-level = 1      # Basic optimization
 debug = true
-incremental = true     # Enable incremental compilation
+incremental = true # Enable incremental compilation
 
 [profile.release]
 # Full release optimization - slow compilation, small fast binaries
-opt-level = 3          # Full optimization
-debug = false          # No debug info
-lto = true            # Link-time optimization (slow but effective)
-codegen-units = 1     # Better optimization, slower compilation
-panic = "abort"       # Smaller binaries
+opt-level = 3     # Full optimization
+debug = false     # No debug info
+lto = true        # Link-time optimization (slow but effective)
+codegen-units = 1 # Better optimization, slower compilation
+panic = "abort"   # Smaller binaries
 
 [profile.fast-release]
 # Quick release - faster compilation with good optimization
 inherits = "release"
-opt-level = 2         # Good optimization, faster than level 3
+opt-level = 2        # Good optimization, faster than level 3
 lto = "thin"         # Faster LTO
 codegen-units = 4    # Parallel compilation
 debug = false
-
-
