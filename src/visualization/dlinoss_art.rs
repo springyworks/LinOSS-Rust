@@ -64,6 +64,7 @@ pub struct DLinossVisualizer {
     pub config: DLinossVisualizerConfig,
     time: f64,
     history: Vec<Vec<f64>>, // Store oscillation history for trails
+    eeg_electrodes: Vec<EEGElectrode>, // EEG-like distance measurements
     device: <MyBackend as burn::tensor::backend::Backend>::Device,
 }
 
@@ -72,17 +73,17 @@ impl DLinossVisualizer {
         let device = <MyBackend as burn::tensor::backend::Backend>::Device::default();
         let mut dlinoss_layers = Vec::new();
         
-        // Create multiple dLinOSS layers with different parameters for rich dynamics
+        // Create multiple dLinOSS layers with well-separated parameters for distinct, discriminable patterns
         for i in 0..config.num_oscillators {
             let layer_config = DLinossLayerConfig {
                 d_input: 2,  // 2D input for x,y coordinates
                 d_model: 8,  // Multiple oscillator pairs
                 d_output: 2, // 2D output for x,y movements
                 delta_t: config.time_step,
-                init_std: 0.1,
+                init_std: 0.15 + (i as f64 * 0.05), // Varied initialization for spatial separation
                 enable_layer_norm: false,
                 enable_damping: true,
-                init_damping: config.damping_strength * (1.0 + i as f64 * 0.2), // Varied damping
+                init_damping: config.damping_strength * (1.0 + i as f64 * 0.4), // More varied damping for distinct behaviors
                 num_damping_scales: 3,
                 a_parameterization: AParameterization::GELU,
             };
@@ -90,11 +91,21 @@ impl DLinossVisualizer {
             dlinoss_layers.push(DLinossLayer::new(&layer_config, &device));
         }
         
+        // Create EEG electrodes at strategic positions (like real EEG montage)
+        let mut eeg_electrodes = Vec::new();
+        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.2, config.canvas_height * 0.2, "F3".to_string()));
+        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.8, config.canvas_height * 0.2, "F4".to_string()));
+        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.1, config.canvas_height * 0.5, "T3".to_string()));
+        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.9, config.canvas_height * 0.5, "T4".to_string()));
+        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.2, config.canvas_height * 0.8, "P3".to_string()));
+        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.8, config.canvas_height * 0.8, "P4".to_string()));
+        
         Ok(Self {
             dlinoss_layers,
             config: config.clone(),
             time: 0.0,
             history: vec![Vec::new(); config.num_oscillators],
+            eeg_electrodes,
             device,
         })
     }
@@ -122,9 +133,18 @@ impl DLinossVisualizer {
             let output = layer.forward(input);
             let output_data: Vec<f32> = output.into_data().convert::<f32>().into_vec().unwrap();
             
-            // Convert to screen coordinates
-            let x = (output_data[0] as f64 * self.config.canvas_width * 0.3) + self.config.canvas_width * 0.5;
-            let y = (output_data[1] as f64 * self.config.canvas_height * 0.3) + self.config.canvas_height * 0.5;
+            // Convert to screen coordinates with much wider spatial separation
+            let angle = (layer_idx as f64 / self.config.num_oscillators as f64) * 2.0 * std::f64::consts::PI;
+            let radius_base = 0.4; // Much larger base radius for wide separation
+            let radius_variation = output_data[0] as f64 * 0.08; // Smaller dynamic variation
+            
+            let center_x = self.config.canvas_width * 0.5;
+            let center_y = self.config.canvas_height * 0.5;
+            
+            let x = center_x + (radius_base + radius_variation) * self.config.canvas_width * angle.cos() +
+                    output_data[1] as f64 * self.config.canvas_width * 0.05; // Smaller local movement
+            let y = center_y + (radius_base + radius_variation) * self.config.canvas_height * angle.sin() +
+                    output_data[0] as f64 * self.config.canvas_height * 0.05; // Smaller local movement
             
             // Create color based on layer index and time
             let hue = ((layer_idx as f64 / self.config.num_oscillators as f64) * 360.0 + 
@@ -141,6 +161,11 @@ impl DLinossVisualizer {
             if self.history[layer_idx].len() > 200 {
                 self.history[layer_idx].drain(0..4); // Remove 2 points (4 values)
             }
+        }
+        
+        // Update EEG electrode measurements
+        for electrode in &mut self.eeg_electrodes {
+            electrode.measure_signal(&points, self.time);
         }
         
         self.time += self.config.time_step;
@@ -203,53 +228,208 @@ fn hue_to_color_with_alpha(hue: f64, _alpha: u8) -> Color {
     )
 }
 
+/// EEG electrode simulation for distance-based neural signal measurement
+#[derive(Clone)]
+pub struct EEGElectrode {
+    pub x: f64,
+    pub y: f64,
+    pub label: String,
+    pub signal_history: Vec<f64>,
+    pub max_history: usize,
+}
+
+impl EEGElectrode {
+    pub fn new(x: f64, y: f64, label: String) -> Self {
+        Self {
+            x,
+            y,
+            label,
+            signal_history: Vec::new(),
+            max_history: 200, // Store enough for visible wave patterns
+        }
+    }
+    
+    /// Measure blurred signal from all oscillators based on distance
+    pub fn measure_signal(&mut self, oscillators: &[(f64, f64, Color)], time: f64) {
+        let mut total_signal = 0.0;
+        
+        for (osc_x, osc_y, _) in oscillators {
+            // Calculate distance from electrode to oscillator
+            let distance = ((self.x - osc_x).powi(2) + (self.y - osc_y).powi(2)).sqrt();
+            
+            // Signal strength decreases with distance (1/r falloff like real EEG)
+            let distance_factor = 1.0 / (1.0 + distance * 0.01);
+            
+            // Add some oscillatory content based on position and time
+            let signal_strength = (time * 2.0 + osc_x * 0.1 + osc_y * 0.1).sin() * distance_factor;
+            total_signal += signal_strength;
+        }
+        
+        // Add some realistic EEG noise
+        let noise = (time * 13.7).sin() * 0.1;
+        total_signal += noise;
+        
+        // Store in history
+        self.signal_history.push(total_signal);
+        if self.signal_history.len() > self.max_history {
+            self.signal_history.remove(0);
+        }
+    }
+}
+
 /// Render the mesmerizing dLinOSS visualization
 pub fn render_dlinoss_art(frame: &mut Frame, visualizer: &mut DLinossVisualizer) {
     let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(100)])
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
         .split(frame.area());
+    
+    // Left panel: Neural oscillator visualization
+    let neural_area = chunks[0];
+    let eeg_area = chunks[1];
     
     // Get trails and current points outside the closure
     let trails = visualizer.get_trails();
     let current_points = visualizer.step();
     
-    let canvas = Canvas::default()
+    // Calculate canvas bounds based on terminal size for maximum usage - ZOOMED IN 12X
+    let canvas_width = (neural_area.width as f64 - 4.0) * 24.0; // Triple the 4x: was 8.0, now 24.0
+    let canvas_height = (neural_area.height as f64 - 4.0) * 48.0; // Triple the 4x: was 16.0, now 48.0
+    
+    let neural_canvas = Canvas::default()
         .block(Block::default()
-            .title("dLinOSS Brain Dynamics - Universal Building Blocks")
+            .title("dLinOSS Neural Oscillators - ZOOMED 12X")
             .borders(Borders::ALL)
             .style(Style::default().fg(Color::Cyan)))
-        .x_bounds([0.0, visualizer.config.canvas_width])
-        .y_bounds([0.0, visualizer.config.canvas_height])
+        .x_bounds([0.0, canvas_width])
+        .y_bounds([0.0, canvas_height])
         .paint(|ctx| {
-            // Draw trails for mesmerizing effect
+            // Scale factor to map from fixed config bounds to dynamic canvas bounds
+            let scale_x = canvas_width / visualizer.config.canvas_width;
+            let scale_y = canvas_height / visualizer.config.canvas_height;
+            
+            // Draw trails as connecting lines instead of blobs
             for trail in &trails {
+                let mut prev_point: Option<(f64, f64)> = None;
                 for (x, y, color) in trail {
-                    ctx.draw(&ratatui::widgets::canvas::Circle {
-                        x: *x,
-                        y: *y,
-                        radius: 0.5,
-                        color: *color,
-                    });
+                    let scaled_x = x * scale_x;
+                    let scaled_y = y * scale_y;
+                    
+                    if let Some((prev_x, prev_y)) = prev_point {
+                        // Draw line connecting trail points
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1: prev_x,
+                            y1: prev_y,
+                            x2: scaled_x,
+                            y2: scaled_y,
+                            color: *color,
+                        });
+                    }
+                    prev_point = Some((scaled_x, scaled_y));
                 }
             }
             
-            // Draw current oscillator positions
-            for (x, y, color) in &current_points {
+            // Draw current oscillator positions as distinct shapes
+            for (i, (x, y, color)) in current_points.iter().enumerate() {
+                let scaled_x = x * scale_x;
+                let scaled_y = y * scale_y;
+                
+                match i % 3 {
+                    0 => {
+                        // Cross pattern
+                        let size = 8.0 * scale_x.min(scale_y);
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1: scaled_x - size, y1: scaled_y, x2: scaled_x + size, y2: scaled_y, color: *color,
+                        });
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1: scaled_x, y1: scaled_y - size, x2: scaled_x, y2: scaled_y + size, color: *color,
+                        });
+                    },
+                    1 => {
+                        // Diamond pattern
+                        let size = 6.0 * scale_x.min(scale_y);
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1: scaled_x, y1: scaled_y - size, x2: scaled_x + size, y2: scaled_y, color: *color,
+                        });
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1: scaled_x + size, y1: scaled_y, x2: scaled_x, y2: scaled_y + size, color: *color,
+                        });
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1: scaled_x, y1: scaled_y + size, x2: scaled_x - size, y2: scaled_y, color: *color,
+                        });
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1: scaled_x - size, y1: scaled_y, x2: scaled_x, y2: scaled_y - size, color: *color,
+                        });
+                    },
+                    _ => {
+                        // Small circle outline only
+                        ctx.draw(&ratatui::widgets::canvas::Circle {
+                            x: scaled_x,
+                            y: scaled_y,
+                            radius: 4.0 * scale_x.min(scale_y),
+                            color: *color,
+                        });
+                    }
+                }
+            }
+            
+            // Draw EEG electrode positions
+            for electrode in &visualizer.eeg_electrodes {
+                let electrode_x = electrode.x * scale_x / visualizer.config.canvas_width * canvas_width;
+                let electrode_y = electrode.y * scale_y / visualizer.config.canvas_height * canvas_height;
+                
                 ctx.draw(&ratatui::widgets::canvas::Circle {
-                    x: *x,
-                    y: *y,
-                    radius: 2.0,
-                    color: *color,
+                    x: electrode_x,
+                    y: electrode_y,
+                    radius: 3.0 * scale_x.min(scale_y),
+                    color: Color::White,
                 });
             }
         });
     
-    frame.render_widget(canvas, chunks[0]);
+    frame.render_widget(neural_canvas, neural_area);
+    
+    // Right panel: EEG-like waves
+    let eeg_canvas = Canvas::default()
+        .block(Block::default()
+            .title("EEG-like Distance Measurements")
+            .borders(Borders::ALL)
+            .style(Style::default().fg(Color::Yellow)))
+        .x_bounds([0.0, 200.0])
+        .y_bounds([-3.0, 3.0])
+        .paint(|ctx| {
+            // Draw EEG waveforms
+            for (electrode_idx, electrode) in visualizer.eeg_electrodes.iter().enumerate() {
+                if electrode.signal_history.len() > 1 {
+                    let y_offset = 2.5 - (electrode_idx as f64 * 1.0); // Stack waveforms vertically
+                    
+                    for i in 1..electrode.signal_history.len() {
+                        let x1 = (i - 1) as f64;
+                        let x2 = i as f64;
+                        let y1 = electrode.signal_history[i - 1] * 0.3 + y_offset;
+                        let y2 = electrode.signal_history[i] * 0.3 + y_offset;
+                        
+                        ctx.draw(&ratatui::widgets::canvas::Line {
+                            x1, y1, x2, y2,
+                            color: match electrode_idx {
+                                0 => Color::Red,
+                                1 => Color::Green,
+                                2 => Color::Blue,
+                                3 => Color::Magenta,
+                                4 => Color::Cyan,
+                                _ => Color::Yellow,
+                            },
+                        });
+                    }
+                }
+            }
+        });
+    
+    frame.render_widget(eeg_canvas, eeg_area);
 }
 
 /// Run the mesmerizing dLinOSS visualization
-pub fn run_dlinoss_screensaver() -> Result<(), Box<dyn std::error::Error>> {
+pub fn run_dlinoss_visualizer() -> Result<(), Box<dyn std::error::Error>> {
     // Create a shared flag for graceful shutdown
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
@@ -286,13 +466,13 @@ pub fn run_dlinoss_screensaver() -> Result<(), Box<dyn std::error::Error>> {
     
     // Create visualizer
     let config = DLinossVisualizerConfig {
-        num_oscillators: 12,
+        num_oscillators: 6,  // Reduced from 12 to 6 for less clutter
         canvas_width: 200.0,
         canvas_height: 80.0,
-        time_step: 0.03,
-        damping_strength: 0.05,
-        frequency_range: (0.2, 2.0),
-        color_cycle_speed: 0.2,
+        time_step: 0.05,    // Slightly slower for more visible motion
+        damping_strength: 0.08,
+        frequency_range: (0.3, 1.5), // Narrower range for more distinct frequencies
+        color_cycle_speed: 0.15,
     };
     
     let result = (|| -> Result<(), Box<dyn std::error::Error>> {

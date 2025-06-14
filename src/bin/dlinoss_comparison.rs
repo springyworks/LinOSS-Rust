@@ -8,8 +8,8 @@
 // arXiv:2505.12171 (2025).
 
 use burn::{
-    tensor::{Tensor, TensorData},
     prelude::Backend,
+    tensor::{Tensor, TensorData},
 };
 use std::time::Instant;
 
@@ -18,10 +18,10 @@ use std::time::Instant;
 use burn::backend::wgpu::{Wgpu, WgpuDevice};
 
 use linoss_rust::linoss::{
-    layer::{LinossLayer, LinossLayerConfig},
     dlinoss_layer::{AParameterization, DLinossLayer, DLinossLayerConfig},
+    layer::{LinossLayer, LinossLayerConfig},
 };
-use rand::{Rng, SeedableRng, rngs::StdRng};
+use rand::{rngs::StdRng, Rng, SeedableRng};
 
 fn generate_test_signal<B: Backend>(
     device: &B::Device,
@@ -30,10 +30,10 @@ fn generate_test_signal<B: Backend>(
     input_dim: usize,
 ) -> Tensor<B, 3> {
     let mut rng = StdRng::seed_from_u64(42);
-    
+
     // Generate a mix of sinusoidal and noisy signals
     let mut data = vec![0.0; batch_size * seq_len * input_dim];
-    
+
     for b in 0..batch_size {
         for t in 0..seq_len {
             for d in 0..input_dim {
@@ -47,7 +47,7 @@ fn generate_test_signal<B: Backend>(
             }
         }
     }
-    
+
     let tensor_data = TensorData::new(data, [batch_size, seq_len, input_dim]);
     Tensor::from_data(tensor_data, device)
 }
@@ -63,19 +63,19 @@ where
 {
     // Warmup
     let _ = model(input);
-    
+
     let start = Instant::now();
     let mut output = None;
-    
+
     for _ in 0..iterations {
         output = Some(model(input));
     }
-    
+
     let duration = start.elapsed();
     let avg_time_ms = duration.as_secs_f64() * 1000.0 / iterations as f64;
-    
+
     println!("{}: {:.3} ms/iteration", name, avg_time_ms);
-    
+
     (avg_time_ms, output.unwrap())
 }
 
@@ -83,7 +83,7 @@ fn calculate_oscillation_stability<B: Backend>(output: &Tensor<B, 3>) -> f32 {
     // Simplified stability measure - just use the mean absolute value as a proxy
     let output_abs = output.clone().abs();
     let mean_abs = output_abs.mean();
-    
+
     // Extract value using to_data and manual byte interpretation
     let data = mean_abs.to_data();
     let bytes = data.as_bytes();
@@ -98,27 +98,30 @@ fn calculate_oscillation_stability<B: Backend>(output: &Tensor<B, 3>) -> f32 {
 fn linoss_forward_sequence<B: Backend>(
     layer: &LinossLayer<B>,
     input: &Tensor<B, 3>, // [batch, seq_len, input_dim]
-    _output_dim: usize, // Keep for potential future use
+    _output_dim: usize,   // Keep for potential future use
 ) -> Tensor<B, 3> {
     let batch_size = input.dims()[0];
     let seq_len = input.dims()[1];
-    
+
     let mut outputs = Vec::new();
     let mut hidden_state: Option<Tensor<B, 2>> = None;
-    
+
     for t in 0..seq_len {
-        let input_t = input.clone().slice([0..batch_size, t..(t+1), 0..input.dims()[2]]).squeeze(1);
+        let input_t = input
+            .clone()
+            .slice([0..batch_size, t..(t + 1), 0..input.dims()[2]])
+            .squeeze(1);
         let result = layer.forward_step(input_t, hidden_state.clone());
-        
+
         outputs.push(result.output.clone().unsqueeze_dim(1)); // Add time dimension
         hidden_state = result.hidden_state;
     }
-    
+
     // Concatenate along time dimension
     Tensor::cat(outputs, 1)
 }
 
-fn run_comparison<B: Backend>(device: B::Device) 
+fn run_comparison<B: Backend>(device: B::Device)
 where
     B::FloatTensorPrimitive: Send + Sync,
     B::IntTensorPrimitive: Send + Sync,
@@ -126,7 +129,7 @@ where
 {
     println!("=== D-LinOSS vs LinOSS Comparison ===");
     println!("Backend: {}", std::any::type_name::<B>());
-    
+
     // Test parameters
     let batch_size = 8;
     let seq_len = 256;
@@ -134,12 +137,14 @@ where
     let model_dim = 32;
     let output_dim = 4;
     let iterations = 10;
-    
+
     // Generate test signal
     let input = generate_test_signal::<B>(&device, batch_size, seq_len, input_dim);
-    println!("Input shape: [batch={}, seq_len={}, input_dim={}]", 
-             batch_size, seq_len, input_dim);
-    
+    println!(
+        "Input shape: [batch={}, seq_len={}, input_dim={}]",
+        batch_size, seq_len, input_dim
+    );
+
     // Configure LinOSS
     let linoss_config = LinossLayerConfig {
         d_state_m: model_dim,
@@ -149,11 +154,11 @@ where
         init_std: 0.02,
         enable_d_feedthrough: true,
     };
-    
+
     // Configure D-LinOSS with learnable damping
     let dlinoss_config = DLinossLayerConfig {
         d_input: input_dim,
-        d_model: model_dim, 
+        d_model: model_dim,
         d_output: output_dim,
         delta_t: 0.1,
         init_std: 0.02,
@@ -163,43 +168,38 @@ where
         num_damping_scales: 1,
         a_parameterization: AParameterization::ReLU, // Add the missing field
     };
-    
+
     // Create models
     let linoss_layer = linoss_config.init(&device);
     let dlinoss_layer = DLinossLayer::<B>::new(&dlinoss_config, &device);
-    
+
     println!("\n--- Performance Benchmarks ---");
-    
+
     // Benchmark LinOSS
-    let mut linoss_forward = |input: &Tensor<B, 3>| {
-        linoss_forward_sequence(&linoss_layer, input, output_dim)
-    };
-    let (linoss_time, linoss_output) = benchmark_model(
-        &mut linoss_forward,
-        &input,
-        "LinOSS",
-        iterations
-    );
-    
+    let mut linoss_forward =
+        |input: &Tensor<B, 3>| linoss_forward_sequence(&linoss_layer, input, output_dim);
+    let (linoss_time, linoss_output) =
+        benchmark_model(&mut linoss_forward, &input, "LinOSS", iterations);
+
     // Benchmark D-LinOSS
-    let mut dlinoss_forward = |input: &Tensor<B, 3>| {
-        dlinoss_layer.forward(input.clone())
-    };
-    let (dlinoss_time, dlinoss_output) = benchmark_model(
-        &mut dlinoss_forward,
-        &input,
-        "D-LinOSS",
-        iterations
-    );
-    
+    let mut dlinoss_forward = |input: &Tensor<B, 3>| dlinoss_layer.forward(input.clone());
+    let (dlinoss_time, dlinoss_output) =
+        benchmark_model(&mut dlinoss_forward, &input, "D-LinOSS", iterations);
+
     // Calculate stability metrics
     let linoss_stability = calculate_oscillation_stability(&linoss_output);
     let dlinoss_stability = calculate_oscillation_stability(&dlinoss_output);
-    
+
     println!("\n--- Results Analysis ---");
-    println!("LinOSS  - Time: {:.3} ms, Stability: {:.6}", linoss_time, linoss_stability);
-    println!("D-LinOSS - Time: {:.3} ms, Stability: {:.6}", dlinoss_time, dlinoss_stability);
-    
+    println!(
+        "LinOSS  - Time: {:.3} ms, Stability: {:.6}",
+        linoss_time, linoss_stability
+    );
+    println!(
+        "D-LinOSS - Time: {:.3} ms, Stability: {:.6}",
+        dlinoss_time, dlinoss_stability
+    );
+
     // Calculate speed ratios and improvements properly
     let speed_ratio = dlinoss_time / linoss_time;
     let stability_improvement = if linoss_stability > dlinoss_stability {
@@ -207,26 +207,35 @@ where
     } else {
         0.0
     };
-    
+
     println!("\n--- Performance Comparison ---");
     if dlinoss_time > linoss_time {
         println!("D-LinOSS is {:.2}x slower than LinOSS", speed_ratio);
-        println!("D-LinOSS takes {:.1}% more time", (speed_ratio - 1.0) * 100.0);
+        println!(
+            "D-LinOSS takes {:.1}% more time",
+            (speed_ratio - 1.0) * 100.0
+        );
     } else {
-        println!("D-LinOSS is {:.2}x faster than LinOSS", linoss_time / dlinoss_time);
+        println!(
+            "D-LinOSS is {:.2}x faster than LinOSS",
+            linoss_time / dlinoss_time
+        );
     }
-    
+
     if dlinoss_stability < linoss_stability {
-        println!("D-LinOSS has {:.1}% better stability (lower variance)", stability_improvement);
+        println!(
+            "D-LinOSS has {:.1}% better stability (lower variance)",
+            stability_improvement
+        );
     } else {
         println!("LinOSS has better stability");
     }
-    
+
     // Output shape verification
     println!("\n--- Output Verification ---");
     println!("LinOSS output shape: {:?}", linoss_output.shape());
     println!("D-LinOSS output shape: {:?}", dlinoss_output.shape());
-    
+
     println!("\n✓ D-LinOSS comparison completed successfully!");
 }
 
@@ -237,7 +246,7 @@ pub fn main() {
         let device = WgpuDevice::default();
         run_comparison::<Wgpu>(device);
     }
-    
+
     #[cfg(all(feature = "ndarray_backend", not(feature = "wgpu_backend")))]
     {
         use burn::backend::ndarray::{NdArray, NdArrayDevice};
@@ -245,9 +254,11 @@ pub fn main() {
         let device = NdArrayDevice::default();
         run_comparison::<NdArray>(device);
     }
-    
+
     #[cfg(not(any(feature = "wgpu_backend", feature = "ndarray_backend")))]
     {
-        println!("No backend feature enabled. Please enable either 'wgpu_backend' or 'ndarray_backend'.");
+        println!(
+            "No backend feature enabled. Please enable either 'wgpu_backend' or 'ndarray_backend'."
+        );
     }
 }

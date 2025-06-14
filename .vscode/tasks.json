@@ -2,19 +2,18 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "args": [
-        "build",
-        "--profile",
-        "dev-opt"
-      ],
-      "command": "cargo",
-      "group": "build",
-      "isBackground": false,
-      "label": "Build Dev Optimized",
+      "label": "Build Rust Project (LinossRust)",
+      "type": "cargo",
+      "command": "build",
+      "args": [],
       "problemMatcher": [
         "$rustc"
       ],
-      "type": "shell"
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Compile the Rust project LinossRust using cargo build."
     }
   ]
 }

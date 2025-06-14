@@ -23,12 +23,12 @@
 
 ## 📊 **Before/After Comparison**
 
-| **Before Cleanup** | **After Cleanup** |
-|---|---|
-| 6 files, ~112KB | 4 files, ~68KB |
-| 3 redundant Draw.io files | 1 consolidated multi-page Draw.io |
-| Generic file names | Descriptive, purpose-specific names |
-| No directory overview | Comprehensive README navigation |
+| **Before Cleanup**        | **After Cleanup**                   |
+| ------------------------- | ----------------------------------- |
+| 6 files, ~112KB           | 4 files, ~68KB                      |
+| 3 redundant Draw.io files | 1 consolidated multi-page Draw.io   |
+| Generic file names        | Descriptive, purpose-specific names |
+| No directory overview     | Comprehensive README navigation     |
 
 ## 📁 **Final Directory Structure**
 

@@ -56,7 +56,20 @@ Interactive TUI visualization of a chaotic 2D LinOSS system.
 Compares the performance of different scan algorithms implemented in LinOSS.
 
 ### damped_sine_response.rs
-Shows a training loop with TUI for a damped sine response task.
+Interactive training demonstration for impulse response learning with **LinOSS/dLinOSS model toggle**.
+
+**Features:**
+- **Dual Model Architecture**: Switch between standard LinOSS and damped dLinOSS models
+- **Interactive Training**: Real-time training visualization with live loss plotting
+- **Impulse Response Task**: Learn to map impulse input → damped sine wave output
+- **Model Comparison**: Compare LinOSS vs dLinOSS performance on the same task
+- **Controls**: Press **[M]** to toggle models, **[Q]** to quit
+
+**Technical Details:**
+- **LinOSS Model**: 2-layer FullLinossModel (32D state, 16D hidden)
+- **dLinOSS Model**: Single-layer with GELU A-parameterization and damping
+- **Target Function**: `e^(-0.5*t) * sin(5*t)` - classic damped oscillator response
+- **Training**: Adam optimizer with MSE loss, visualized in real-time TUI
 
 ### dlinoss_comparison.rs
 Compares different D-LinOSS model variants on a benchmark task.

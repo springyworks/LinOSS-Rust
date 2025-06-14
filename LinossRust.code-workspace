@@ -4,7 +4,12 @@
 			"path": "."
 		},
 		{
-			"path": "../LinossRust-ItCrashhhed"
+			"name": "LinOSS Python Reference",
+			"path": "/home/rustuser/pyth/linoss_kos"
+		},
+		{
+			"name": "dLinOSS Python Reference",
+			"path": "/home/rustuser/pyth/dlinoss"
 		}
 	],
 	"settings": {
