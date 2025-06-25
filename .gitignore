@@ -1,1 +1,5 @@
 /target
+# Ignore the target directory for egui_native
+examples/egui_native/target/
+# Ignore the target directory for web_demo
+examples/web_demo/target/
