@@ -1,0 +1,56 @@
+[package]
+name = "linoss-egui-examples"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "dlinoss_explorer"
+path = "src/dlinoss_explorer.rs"
+
+[dependencies]
+# Local LinossRust library
+linoss_rust = { path = "../.." }
+
+# egui for native GUI
+eframe = { version = "0.31.1", features = ["default", "glow", "persistence"] }
+egui = "0.31.1"
+egui_extras = { version = "0.31.1", features = ["image", "svg"] }
+egui_plot = "0.31.0"
+
+# Core dependencies
+burn = { version = "0.17.1", features = [
+    "ndarray",
+    "autodiff", 
+    "wgpu",
+    "std",
+    "dataset",
+] }
+nalgebra = { version = "0.33.2", features = ["rand"] }
+rand = { version = "0.8.5", features = ["std_rng"] }
+ndarray = "0.16"
+
+# Utilities
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.11"
+anyhow = "1.0"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+# For advanced plotting and data visualization
+plotters = "0.3.6"
+num-traits = "0.2"
+
+[features]
+default = ["ndarray_backend"]
+ndarray_backend = ["burn/ndarray", "burn/autodiff"]
+wgpu_backend = ["burn/wgpu", "burn/autodiff"]
+
+[profile.dev]
+opt-level = 1
+debug = true
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = true

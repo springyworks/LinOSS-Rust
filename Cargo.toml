@@ -45,6 +45,13 @@ ndarray-npy = "0.9.1"
 anyhow = "1.0"
 libc = "0.2" # For low-level system calls and O_NONBLOCK
 ctrlc = "3.4" # For signal handling
+tokio-tungstenite = "0.21" # WebSocket support for burn profiler bridge
+futures-util = "0.3" # For WebSocket stream handling
+
+# egui for native GUI applications
+eframe = "0.31.1"
+egui = "0.31.1"
+egui_extras = { version = "0.31.1", features = ["image", "svg"] }
 
 [dev-dependencies]
 tempfile = "3.0"

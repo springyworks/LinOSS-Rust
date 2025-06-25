@@ -3,6 +3,7 @@ pub mod linoss;
 pub mod data;
 pub mod checkpoint;
 pub mod visualization;
+pub mod analysis;
 pub type Vector = nalgebra::DVector<f64>;
 pub type Matrix = nalgebra::DMatrix<f64>;
 

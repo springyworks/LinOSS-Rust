@@ -64,7 +64,7 @@ pub struct DLinossVisualizer {
     pub config: DLinossVisualizerConfig,
     time: f64,
     history: Vec<Vec<f64>>, // Store oscillation history for trails
-    eeg_electrodes: Vec<EEGElectrode>, // EEG-like distance measurements
+    pub eeg_electrodes: Vec<EEGElectrode>, // EEG-like distance measurements
     device: <MyBackend as burn::tensor::backend::Backend>::Device,
 }
 
@@ -110,6 +110,53 @@ impl DLinossVisualizer {
         })
     }
     
+    /// Get current points for external access
+    pub fn get_current_points(&self) -> Vec<(f64, f64, Color)> {
+        let mut points = Vec::new();
+        
+        for (layer_idx, layer) in self.dlinoss_layers.iter().enumerate() {
+            // Create dynamic input based on time and layer index
+            let freq = self.config.frequency_range.0 + 
+                      (self.config.frequency_range.1 - self.config.frequency_range.0) * 
+                      (layer_idx as f64 / self.config.num_oscillators as f64);
+            
+            let input_x = (self.time * freq).sin();
+            let input_y = (self.time * freq * 1.618).cos(); // Golden ratio for interesting patterns
+            
+            // Create input tensor [1, 1, 2] for single timestep, single batch
+            let input = Tensor::<MyBackend, 3>::from_data(
+                TensorData::new(vec![input_x as f32, input_y as f32], [1, 1, 2]),
+                &self.device,
+            );
+            
+            // Forward through dLinOSS
+            let output = layer.forward(input);
+            let output_data: Vec<f32> = output.into_data().convert::<f32>().into_vec().unwrap();
+            
+            // Convert to screen coordinates with much wider spatial separation
+            let angle = (layer_idx as f64 / self.config.num_oscillators as f64) * 2.0 * std::f64::consts::PI;
+            let radius_base = 0.4; // Much larger base radius for wide separation
+            let radius_variation = output_data[0] as f64 * 0.08; // Smaller dynamic variation
+            
+            let center_x = self.config.canvas_width * 0.5;
+            let center_y = self.config.canvas_height * 0.5;
+            
+            let x = center_x + (radius_base + radius_variation) * self.config.canvas_width * angle.cos() +
+                    output_data[1] as f64 * self.config.canvas_width * 0.05; // Smaller local movement
+            let y = center_y + (radius_base + radius_variation) * self.config.canvas_height * angle.sin() +
+                    output_data[0] as f64 * self.config.canvas_height * 0.05; // Smaller local movement
+            
+            // Create color based on layer index and time
+            let hue = ((layer_idx as f64 / self.config.num_oscillators as f64) * 360.0 + 
+                      self.time * self.config.color_cycle_speed * 50.0) % 360.0;
+            let color = hue_to_color(hue);
+            
+            points.push((x, y, color));
+        }
+        
+        points
+    }
+
     /// Generate mesmerizing oscillatory patterns
     pub fn step(&mut self) -> Vec<(f64, f64, Color)> {
         let mut points = Vec::new();
