@@ -1,5 +1,62 @@
+# Rust build artifacts
 /target
-# Ignore the target directory for egui_native
+**/target/
+Cargo.lock
+
+# WASM build artifacts
+**/*.wasm
+**/wasm/
+**/pkg/
+**/*.bg.wasm
+**/*.bg.js
+**/snippets/
+
+# Web demo specific
+ghwebdemo/target/
+ghwebdemo/wasm/
+ghwebdemo/pkg/
+demo/target/
+demo/wasm/
+demo/pkg/
+
+# Examples build artifacts
 examples/egui_native/target/
-# Ignore the target directory for web_demo
 examples/web_demo/target/
+examples/*/target/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python cache (for scripts)
+__pycache__/
+*.pyc
+*.pyo
+
+# Large binary files
+*.bin
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test artifacts
+test_output/
+*.test
