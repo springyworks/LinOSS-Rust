@@ -212,7 +212,7 @@ egui_plot = "0.31.0"    # Close enough
 
 ```bash
 # ✅ RELIABLE - Use system browser
-xdg-open docs/index.html
+xdg-open demo/index.html
 
 # ❌ UNRELIABLE - VS Code Simple Browser  
 # - White screens

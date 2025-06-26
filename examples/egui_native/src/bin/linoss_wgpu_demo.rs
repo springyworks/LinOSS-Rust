@@ -384,7 +384,7 @@ impl eframe::App for LinossWgpuDemoApp {
                     ui.vertical(|ui| {
                         ui.heading("📈 Neural Signal Time Series");
                         
-                        if let (Some(plot_data), Some(neural_state)) = (&self.plot_data, &self.neural_state) {
+                        if let (Some(plot_data), Some(_neural_state)) = (&self.plot_data, &self.neural_state) {
                             if !plot_data.time_series.is_empty() {
                                 Plot::new("neural_signals")
                                     .height(400.0)

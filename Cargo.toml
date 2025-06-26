@@ -21,14 +21,14 @@ name = "train_linoss"
 path = "examples/train_linoss.rs"
 
 [dependencies]
-burn = { version = "0.17.1", features = [
+burn = { path = "/home/rustuser/projects/from_github/burn/crates/burn", features = [
     "ndarray",
-    "autodiff",
+    "autodiff", 
     "wgpu",
     "std",
     "dataset",
 ] }
-nalgebra = { version = "0.33.2", features = ["rand"] }
+nalgebra = { version = "0.33.2" }
 rand = { version = "0.8.5", features = ["std_rng"] }
 ndarray = "0.16"
 ratatui = { version = "0.29.0", features = ["crossterm"] }
@@ -93,3 +93,7 @@ opt-level = 2        # Good optimization, faster than level 3
 lto = "thin"         # Faster LTO
 codegen-units = 4    # Parallel compilation
 debug = false
+
+# WASM-specific dependencies
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }

@@ -44,8 +44,8 @@ Here are some of the key files and directories in the project:
 *   `src/main.rs`: A simplified test case for the Linoss model.
 *   `src/bin/burn_profiler_bridge.rs`: The WebSocket server that bridges the simulation data to the web interface.
 *   `examples/burn_profiler_demo.rs`: The main simulation that generates the neural dynamics data.
-*   `docs/index.html`: The main HTML file for the web interface.
-*   `docs/assets/script.js`: The JavaScript code for the web interface.
+*   `demo/index.html`: The main HTML file for the web interface.
+*   `demo/assets/script.js`: The JavaScript code for the web interface.
 *   `scripts/launch_burn_profiler.sh`: The script to launch the entire system.
 
 By following these instructions, you should be able to effectively assist with the development of the LinossRust project.

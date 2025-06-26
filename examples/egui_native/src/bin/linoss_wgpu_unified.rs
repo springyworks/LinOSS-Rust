@@ -332,7 +332,7 @@ impl LinossWgpuState {
                     
                     // Dispatch one workgroup per oscillator (or optimize with larger workgroups)
                     let workgroup_size = 64;
-                    let num_workgroups = (self.oscillator_count + workgroup_size - 1) / workgroup_size;
+                    let num_workgroups = self.oscillator_count.div_ceil(workgroup_size);
                     compute_pass.dispatch_workgroups(num_workgroups as u32, 1, 1);
                 }
                 
@@ -641,11 +641,11 @@ impl LinossWgpuApp {
                     egui::Color32::LIGHT_RED,
                 ];
                 
-                for i in 0..self.params.oscillator_count.min(colors.len()) {
+                for (i, &color) in colors.iter().enumerate().take(self.params.oscillator_count.min(colors.len())) {
                     let line_data = self.plot_data.get_line_data(i);
                     plot_ui.line(
                         Line::new(line_data)
-                            .color(colors[i])
+                            .color(color)
                             .width(1.5)
                             .name(format!("Oscillator {}", i))
                     );

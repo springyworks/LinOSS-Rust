@@ -32,7 +32,7 @@ python -m http.server 8000
 
 ### 4. WASM Integration (Future)
 When LinossRust WASM builds are ready:
-1. Place `.wasm` files in `/docs/wasm/`
+1. Place `.wasm` files in `/demo/wasm/`
 2. Update `script.js` to load WASM modules
 3. Enable high-performance client-side processing
 

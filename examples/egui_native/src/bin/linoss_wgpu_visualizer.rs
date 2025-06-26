@@ -15,7 +15,7 @@ use eframe::{egui, egui_wgpu};
 use egui_plot::{Line, Plot, PlotPoints};
 use std::sync::Arc;
 use std::collections::VecDeque;
-use wgpu::util::DeviceExt;
+
 
 // LinOSS imports with WGPU backend
 use linoss_rust::Vector;

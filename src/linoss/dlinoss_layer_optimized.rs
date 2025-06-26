@@ -5,6 +5,8 @@
 // 3. Uses tensor operations exclusively (no CPU arrays)
 // 4. Optimizes damping application using broadcast operations
 
+#![allow(clippy::too_many_arguments)]
+
 use burn::{
     config::Config,
     module::Module,
@@ -305,7 +307,7 @@ impl<B: Backend> OptimizedDLinossLayer<B> {
             // Expand damping factors to match oscillator pairs [pos, vel, pos, vel, ...]
             let expanded_damping = damping_factors
                 .repeat(&[2])
-                .slice([0..d_model]);
+                .narrow(0, 0, d_model);
             
             // Apply damping only to velocity components using the mask
             let damping_multiplier = Tensor::ones([d_model], &states.device()) - 

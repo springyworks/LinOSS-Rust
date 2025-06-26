@@ -29,6 +29,7 @@ use burn::backend::NdArray;
 type BurnBackend = NdArray<f32>;
 
 // Neural state using real LinOSS dynamics
+#[allow(dead_code)]
 pub struct LinossNeuralState {
     // LinOSS layer for neural computation
     dlinoss_layer: Option<DLinossLayer<BurnBackend>>,
@@ -693,9 +694,9 @@ impl eframe::App for LinossVisualizerApp {
                 
                 ui.separator();
                 ui.label(format!("🔄 Oscillators: {}", self.linoss_params.oscillator_count));
-                ui.label(format!("📚 Library: LinOSS"));
+                ui.label("📚 Library: LinOSS".to_string());
                 ui.label(format!("⏰ Time: {:.2}s", self.neural_state.time));
-                ui.label(format!("🧮 Backend: nalgebra"));
+                ui.label("🧮 Backend: nalgebra".to_string());
             });
         }
         

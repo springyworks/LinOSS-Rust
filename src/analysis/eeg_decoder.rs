@@ -143,7 +143,7 @@ pub fn train_eeg_decoder<B: AutodiffBackend>(
 where
     B::FloatElem: Into<f32> + Copy,
 {
-    let mut model = EEGDecoder::new(config, device);
+    let model = EEGDecoder::new(config, device);
     
     println!("🧠 Training EEG Decoder to reconstruct internal neural activity...");
     println!("📊 Dataset: {} samples", training_data.len());

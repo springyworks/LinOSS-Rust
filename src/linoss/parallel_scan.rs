@@ -47,8 +47,7 @@ pub fn perform_sequential_scan<B: Backend>(
     let mut x_history = Vec::with_capacity(seq_len);
     let mut current_x = initial_x;
 
-    for t in 0..seq_len {
-        let pair_t = &elements[t];
+    for (_t, pair_t) in elements.iter().enumerate().take(seq_len) {
         // x_t = M_t * x_{t-1} + F_t
         // In LinOSS, M is constant across time steps, so pair_t.matrix_m is the same M_IM.
         let new_x = pair_t.matrix_m.clone().matmul(current_x.clone()) + pair_t.vector_f.clone();
@@ -85,14 +84,14 @@ pub fn perform_parallel_scan<B: Backend>(
     let mut result = Vec::with_capacity(seq_len);
     let initial_state_cloned = initial_x.clone(); // Clone once before the loop
 
-    for i in 0..seq_len {
+    for (_i, prefix_pair) in prefix_pairs.iter().enumerate().take(seq_len) {
         // x_i = M_prefix_i * x_initial + F_prefix_i
         // This is the application of the combined (M, F) to the initial state.
-        let x_i = prefix_pairs[i]
+        let x_i = prefix_pair
             .matrix_m
             .clone()
             .matmul(initial_state_cloned.clone())
-            + prefix_pairs[i].vector_f.clone();
+            + prefix_pair.vector_f.clone();
         result.push(x_i);
     }
     result
@@ -133,12 +132,12 @@ pub fn perform_tree_scan<B: Backend>(
     let mut result = Vec::with_capacity(seq_len);
     let initial_state_cloned = initial_x.clone();
 
-    for i in 0..seq_len {
-        let x_i = prefix_pairs[i]
+    for prefix_pair in prefix_pairs.iter().take(seq_len) {
+        let x_i = prefix_pair
             .matrix_m
             .clone()
             .matmul(initial_state_cloned.clone())
-            + prefix_pairs[i].vector_f.clone();
+            + prefix_pair.vector_f.clone();
         result.push(x_i);
     }
     result

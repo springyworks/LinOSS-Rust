@@ -92,13 +92,14 @@ impl DLinossVisualizer {
         }
         
         // Create EEG electrodes at strategic positions (like real EEG montage)
-        let mut eeg_electrodes = Vec::new();
-        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.2, config.canvas_height * 0.2, "F3".to_string()));
-        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.8, config.canvas_height * 0.2, "F4".to_string()));
-        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.1, config.canvas_height * 0.5, "T3".to_string()));
-        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.9, config.canvas_height * 0.5, "T4".to_string()));
-        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.2, config.canvas_height * 0.8, "P3".to_string()));
-        eeg_electrodes.push(EEGElectrode::new(config.canvas_width * 0.8, config.canvas_height * 0.8, "P4".to_string()));
+        let eeg_electrodes = vec![
+            EEGElectrode::new(config.canvas_width * 0.2, config.canvas_height * 0.2, "F3".to_string()),
+            EEGElectrode::new(config.canvas_width * 0.8, config.canvas_height * 0.2, "F4".to_string()),
+            EEGElectrode::new(config.canvas_width * 0.1, config.canvas_height * 0.5, "T3".to_string()),
+            EEGElectrode::new(config.canvas_width * 0.9, config.canvas_height * 0.5, "T4".to_string()),
+            EEGElectrode::new(config.canvas_width * 0.2, config.canvas_height * 0.8, "P3".to_string()),
+            EEGElectrode::new(config.canvas_width * 0.8, config.canvas_height * 0.8, "P4".to_string()),
+        ];
         
         Ok(Self {
             dlinoss_layers,

@@ -117,8 +117,7 @@ impl eframe::App for LinossApp {
                                 // Convert 3D positions to 2D isometric projection
                                 let projected_points: Vec<[f64; 2]> = self.positions
                                     .iter()
-                                    .enumerate()
-                                    .map(|(_i, pos)| {
+                                    .map(|pos| {
                                         // Isometric projection: 3D -> 2D
                                         let x = pos[0] - pos[1] * 0.5;
                                         let y = pos[2] + (pos[0] + pos[1]) * 0.3;
