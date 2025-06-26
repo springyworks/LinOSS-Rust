@@ -1,0 +1,10 @@
+# WASM-specific configuration for getrandom 0.3 compatibility
+[target.wasm32-unknown-unknown]
+rustflags = [
+    "--cfg", "web_sys_unstable_apis",
+    # Handle getrandom 0.3.x (uses "wasm_js" feature and backend)
+    "--cfg", "getrandom_backend=\"wasm_js\"",
+    # Optimization flags
+    "-C", "embed-bitcode=yes",
+    "-C", "codegen-units=1"
+]

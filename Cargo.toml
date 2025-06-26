@@ -21,13 +21,13 @@ name = "train_linoss"
 path = "examples/train_linoss.rs"
 
 [dependencies]
+# Burn ML framework with conditional features
 burn = { path = "/home/rustuser/projects/from_github/burn/crates/burn", features = [
     "ndarray",
     "autodiff", 
     "wgpu",
     "std",
-    "dataset",
-] }
+], default-features = false }
 nalgebra = { version = "0.33.2" }
 rand = { version = "0.8.5", features = ["std_rng"] }
 ndarray = "0.16"
@@ -60,9 +60,11 @@ tempfile = "3.0"
 #ode_solvers = "0.6"
 
 [features]
-default = ["ndarray_backend", "wgpu_backend"]
+default = ["ndarray_backend", "wgpu_backend", "dataset"]
 ndarray_backend = ["burn/ndarray", "burn/autodiff"]
 wgpu_backend = ["burn/wgpu", "burn/autodiff"]
+dataset = ["burn/dataset"]  # Optional dataset feature
+burn = []  # Feature for web demo compatibility
 
 # Custom build profiles for development optimization
 [profile.dev]

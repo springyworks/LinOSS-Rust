@@ -3,6 +3,19 @@ use nalgebra::Vector2;
 use std::f64::consts::PI;
 use wasm_bindgen::prelude::*;
 
+// Conditional compilation for Burn support
+#[cfg(feature = "burn")]
+mod lib_burn;
+#[cfg(feature = "burn")]
+pub use lib_burn::main_burn;
+
+// Conditional compilation for minimal Burn test
+#[cfg(feature = "minimal-burn")]
+mod lib_minimal_burn;
+#[cfg(feature = "minimal-burn")]
+pub use lib_minimal_burn::main_minimal_burn;
+
+// Export basic version by default
 #[wasm_bindgen]
 pub fn main() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
@@ -17,12 +30,18 @@ pub fn main() {
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .unwrap();
             
+        // Set fixed canvas size to prevent zooming issues
+        canvas.set_width(800);
+        canvas.set_height(600);
+        canvas.style().set_property("width", "800px").unwrap();
+        canvas.style().set_property("height", "600px").unwrap();
+            
         let start_result = eframe::WebRunner::new()
             .start(
                 canvas,
                 web_options,
-                Box::new(|_cc| {
-                    Ok(Box::new(LinossWebApp::new(_cc)))
+                Box::new(|cc| {
+                    Ok(Box::new(LinossWebApp::new(cc)))
                 }),
             )
             .await;
@@ -50,7 +69,14 @@ struct LinossWebApp {
 }
 
 impl LinossWebApp {
-    fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        // Configure egui style for web with proper API
+        let mut style = (*cc.egui_ctx.style()).clone();
+        style.visuals.panel_fill = egui::Color32::from_rgb(40, 40, 40);
+        style.spacing.button_padding = egui::vec2(8.0, 4.0);
+        style.spacing.item_spacing = egui::vec2(8.0, 6.0);
+        cc.egui_ctx.set_style(style);
+        
         Self {
             time: 0.0,
             frequency: 1.0,
@@ -94,8 +120,11 @@ impl LinossWebApp {
 
 impl eframe::App for LinossWebApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let dt = ctx.input(|i| i.predicted_dt as f64);
+        let dt = ctx.input(|i| i.predicted_dt as f64).min(0.016); // Cap at 60fps
         self.update_oscillator(dt);
+        
+        // Request continuous repaints for smooth animation
+        ctx.request_repaint();
         
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("🧠 D-LinOSS Neural Dynamics Demo");

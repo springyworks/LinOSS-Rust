@@ -6,6 +6,11 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+default = []
+burn = ["dep:burn-tensor", "dep:burn-ndarray", "dep:burn-autodiff"]
+minimal-burn = ["dep:burn-tensor", "dep:burn-ndarray", "dep:burn-autodiff"]
+
 [dependencies]
 # Core dependencies
 nalgebra = { version = "0.33.2", default-features = false }
@@ -27,19 +32,33 @@ web-sys = { version = "0.3", features = [
     "MouseEvent",
     "Window",
     "WebGl2RenderingContext",
+    "WebGlRenderingContext",
     "Navigator",
     "Clipboard",
     "ClipboardEvent",
+    "GpuCanvasContext",
+    "OffscreenCanvas",
 ] }
 
-# egui for web GUI - using the minimal approach from GitHub discussion
-eframe = { version = "0.31.1", default-features = false, features = ["wgpu"] }
+# egui for web GUI - using both wgpu and glow as fallback
+eframe = { version = "0.31.1", default-features = false, features = ["wgpu", "glow"] }
 egui = "0.31.1"
 egui_extras = { version = "0.31.1", features = ["image"] }
+wgpu = "24.0"
+
+# Force getrandom 0.3 with wasm_js feature for all dependencies
+getrandom = { version = "0.3", features = ["wasm_js"] }
+
+# Burn ML framework - using only essential tensor components for WASM
+burn-tensor = { path = "/home/rustuser/projects/from_github/burn/crates/burn-tensor", default-features = false, features = ["std"], optional = true }
+burn-ndarray = { path = "/home/rustuser/projects/from_github/burn/crates/burn-ndarray", default-features = false, features = ["std"], optional = true }
+burn-autodiff = { path = "/home/rustuser/projects/from_github/burn/crates/burn-autodiff", default-features = false, features = ["std"], optional = true }
+
+# LinossRust main library for D-LinOSS layer (without dataset for WASM compatibility)
+linoss_rust = { path = "../..", default-features = false, features = ["burn"], optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-# getrandom fix for WASM - the classic issue!
-getrandom = { version = "0.2", features = ["js"] }
+# No additional dependencies needed - getrandom 0.3 with web_js feature is already specified above
 
 # Enable optimizations for WASM
 [profile.release]
