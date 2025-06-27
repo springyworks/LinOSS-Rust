@@ -1,5 +1,5 @@
 # Rust build artifacts
-/target
+/target/
 **/target/
 
 # Lock files (keep in VCS for libraries, exclude for applications)
@@ -9,18 +9,23 @@
 **/pkg/
 **/snippets/
 
-# Build artifacts in target directories
+# ALL target directories (comprehensive exclusion)
+target/
+examples/*/target/
 ghwebdemo/target/
 examples/web_demo/target/
-# Note: ghwebdemo/wasm/ contains essential files for GitHub Pages demo
+examples/egui_native/target/
 demo/target/
 demo/wasm/
 demo/pkg/
 
-# Examples build artifacts
-examples/egui_native/target/
-examples/web_demo/target/
-examples/*/target/
+# Rust binaries and debug info
+**/debug/
+**/release/
+**/*.rlib
+**/*.rmeta
+**/*.exe
+**/*.pdb
 
 # Logs and temporary files
 *.log
