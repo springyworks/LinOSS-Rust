@@ -1,7 +1,9 @@
 # Rust build artifacts
 /target
 **/target/
-Cargo.lock
+
+# Lock files (keep in VCS for libraries, exclude for applications)
+# Cargo.lock
 
 # WASM build artifacts
 **/*.wasm

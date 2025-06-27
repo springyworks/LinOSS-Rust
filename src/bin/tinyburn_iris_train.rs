@@ -5,16 +5,24 @@ use burn::backend::{NdArray, Autodiff};
 use burn::tensor::{Tensor, backend::Backend};
 use burn::module::Module;
 use burn::nn::{Linear, LinearConfig, Relu};
-use burn::optim::{AdamConfig, Optimizer, GradientsParams};
+// This example doesn't use optimizer directly in the basic version
+// Remove unused imports - cross_entropy_with_logits not used in this simple example
+#[cfg(feature = "npy_files")]
+use burn::tensor::TensorData;
+#[cfg(feature = "npy_files")]
+use burn::optim::{AdamConfig, GradientsParams};
+#[cfg(feature = "npy_files")]
 use burn::tensor::loss::cross_entropy_with_logits;
+#[cfg(feature = "npy_files")]
 use ndarray_npy::read_npy;
 use anyhow::Result;
-use burn::tensor::TensorData;
+// Remove unused TensorData import
 use burn::record::{BinFileRecorder, FullPrecisionSettings, Recorder};
 use std::path::Path;
 
 // Use autodiff backend for training
 // (CPU only, for simplicity)
+#[allow(dead_code)] // Used in conditional compilation blocks
 type MyBackend = Autodiff<NdArray<f32>>;
 
 #[derive(Module, Debug)]
@@ -33,6 +41,7 @@ impl<B: Backend> TinyMLP<B> {
         }
     }
     
+    #[allow(dead_code)] // Used in conditional compilation blocks
     fn forward(&self, x: Tensor<B, 2>) -> Tensor<B, 2> {
         let x = self.linear1.forward(x);
         let x = self.relu.forward(x);
@@ -93,6 +102,13 @@ where
     Ok(model)
 }
 
+#[cfg(not(feature = "npy_files"))]
+fn main() {
+    println!("NPY file reading requires 'npy_files' feature. Enable it with:");
+    println!("cargo run --features npy_files --bin tinyburn_iris_train");
+}
+
+#[cfg(feature = "npy_files")]
 fn main() -> Result<()> {
     println!("🧪 Burn Model Parameters Checkpoint Testing");
     println!("==========================================");
