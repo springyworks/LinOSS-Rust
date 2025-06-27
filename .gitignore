@@ -5,18 +5,14 @@
 # Lock files (keep in VCS for libraries, exclude for applications)
 # Cargo.lock
 
-# WASM build artifacts
-**/*.wasm
-**/wasm/
+# WASM build artifacts (but keep essential demo files)
 **/pkg/
-**/*.bg.wasm
-**/*.bg.js
 **/snippets/
 
-# Web demo specific
+# Build artifacts in target directories
 ghwebdemo/target/
-ghwebdemo/wasm/
-ghwebdemo/pkg/
+examples/web_demo/target/
+# Note: ghwebdemo/wasm/ contains essential files for GitHub Pages demo
 demo/target/
 demo/wasm/
 demo/pkg/
