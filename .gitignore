@@ -53,12 +53,37 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Large binary files
+# Large binary files and executables
 *.bin
 *.exe
 *.dll
 *.so
 *.dylib
+
+# Rust-specific binary artifacts
+**/target/
+**/debug/
+**/release/
+**/*.rlib
+**/*.rmeta
+**/*.d
+**/deps/
+**/.fingerprint/
+**/build/
+**/incremental/
+
+# WASM artifacts (except essential demo files)
+**/*.wasm
+!ghwebdemo/wasm/*.wasm
+!examples/web_demo/wasm/*.wasm
+
+# Model files and training data (often large)
+*.model
+*.checkpoint
+*.ckpt
+*.safetensors
+*.pt
+*.pth
 
 # Test artifacts
 test_output/
