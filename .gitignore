@@ -6,18 +6,17 @@
 # Cargo.lock
 
 # WASM build artifacts (but keep essential demo files)
-**/pkg/
+**/target/**/pkg/
 **/snippets/
 
 # ALL target directories (comprehensive exclusion)
 target/
+**/target/
 examples/*/target/
 ghwebdemo/target/
 examples/web_demo/target/
 examples/egui_native/target/
 demo/target/
-demo/wasm/
-demo/pkg/
 
 # Rust binaries and debug info
 **/debug/
@@ -72,10 +71,12 @@ __pycache__/
 **/build/
 **/incremental/
 
-# WASM artifacts (except essential demo files)
-**/*.wasm
+# WASM artifacts (exclude target-generated, keep essential demo files)
+**/target/**/*.wasm
 !ghwebdemo/wasm/*.wasm
-!examples/web_demo/wasm/*.wasm
+!ghwebdemo/wasm/*.js
+!examples/web_demo/pkg/*.wasm
+!examples/web_demo/pkg/*.js
 
 # Model files and training data (often large)
 *.model
