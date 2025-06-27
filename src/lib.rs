@@ -1,8 +1,11 @@
-// Removed the invalid `html_extra_files` attribute
+// Only include visualization module when the feature is enabled
+#[cfg(feature = "visualization")]
+pub mod visualization;
+
 pub mod linoss;
 pub mod data;
 pub mod checkpoint;
-pub mod visualization;
+
 pub mod analysis;
 pub type Vector = nalgebra::DVector<f64>;
 pub type Matrix = nalgebra::DMatrix<f64>;

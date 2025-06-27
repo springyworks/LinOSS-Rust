@@ -8,8 +8,45 @@ use burn::nn::{Linear, LinearConfig, Relu};
 use burn::optim::{Optimizer, GradientsParams};
 use burn::tensor::loss::cross_entropy_with_logits;
 use burn::record::{BinFileRecorder, FullPrecisionSettings, Recorder};
-use anyhow::Result;
 use std::path::Path;
+
+// Define a custom error type that works everywhere
+#[derive(Debug)]
+pub struct CheckpointError {
+    message: String,
+}
+
+impl std::fmt::Display for CheckpointError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl std::error::Error for CheckpointError {}
+
+impl From<String> for CheckpointError {
+    fn from(msg: String) -> Self {
+        CheckpointError { message: msg }
+    }
+}
+
+impl From<std::io::Error> for CheckpointError {
+    fn from(err: std::io::Error) -> Self {
+        CheckpointError {
+            message: format!("IO error: {}", err),
+        }
+    }
+}
+
+impl From<serde_json::Error> for CheckpointError {
+    fn from(err: serde_json::Error) -> Self {
+        CheckpointError {
+            message: format!("JSON error: {}", err),
+        }
+    }
+}
+
+pub type Result<T> = std::result::Result<T, CheckpointError>;
 
 /// Simple MLP model for testing checkpoint functionality
 #[derive(Module, Debug)]
@@ -55,7 +92,7 @@ where
     
     recorder
         .record(record, path.into())
-        .map_err(|e| anyhow::anyhow!("Failed to save modelparams: {}", e))?;
+        .map_err(|e| CheckpointError::from(format!("Failed to save modelparams: {}", e)))?;
     
     Ok(())
 }
@@ -74,7 +111,7 @@ where
     B::BoolTensorPrimitive: 'static,
 {
     if !Path::new(path).exists() {
-        return Err(anyhow::anyhow!("Model parameters file not found: {}", path));
+        return Err(CheckpointError::from(format!("Model parameters file not found: {}", path)));
     }
     
     let recorder = BinFileRecorder::<FullPrecisionSettings>::new();
@@ -82,7 +119,7 @@ where
     
     let record = recorder
         .load(path.into(), device)
-        .map_err(|e| anyhow::anyhow!("Failed to load modelparams: {}", e))?;
+        .map_err(|e| CheckpointError::from(format!("Failed to load modelparams: {}", e)))?;
     
     model = model.load_record(record);
     

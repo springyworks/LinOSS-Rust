@@ -111,7 +111,7 @@ fn generate_input_sequence<B: Backend>(
     // Initialize with random data first
     let mut initial_input_data = Vec::with_capacity(batch_size * seq_len * input_dim);
     for _ in 0..(batch_size * seq_len * input_dim) {
-        initial_input_data.push(rng.gen::<f32>() * 2.0 - 1.0); // Using rng.gen() instead of rng.random()
+        initial_input_data.push(rng.random::<f32>() * 2.0 - 1.0); // Fixed: Use random() instead of gen()
     }
     let mut input_tensor = Tensor::<B, 3>::from_data(
         TensorData::new(initial_input_data, Shape::new([batch_size, seq_len, input_dim])),

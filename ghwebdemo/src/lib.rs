@@ -122,20 +122,59 @@ mod wasm {
             // Request continuous repainting
             ctx.request_repaint();
             
-            // UI
-            egui::TopBottomPanel::top("header").show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    ui.label(RichText::new("🧠 LinOSS Neural Oscillator").size(18.0));
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.label(format!("Frame: {}", self.frame_count));
+            // Ultra-compact header - minimal space usage
+            egui::TopBottomPanel::top("header")
+                .resizable(false)
+                .min_height(16.0)
+                .max_height(16.0)
+                .show(ctx, |ui| {
+                    ui.spacing_mut().item_spacing.y = 0.0;
+                    ui.spacing_mut().item_spacing.x = 6.0;
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new("🧠").size(12.0));
+                        ui.label(RichText::new("LinOSS").size(11.0).strong());
+                        ui.separator();
+                        ui.label(RichText::new("Neural Oscillator").size(9.0));
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.label(RichText::new(&format!("{}", self.frame_count)).size(8.0));
+                        });
                     });
                 });
-            });
+
+            // Ultra-compact bottom panel - minimal info
+            egui::TopBottomPanel::bottom("dlinoss_info")
+                .resizable(false)
+                .min_height(14.0)
+                .max_height(14.0)
+                .show(ctx, |ui| {
+                    ui.spacing_mut().item_spacing.y = 0.0;
+                    ui.spacing_mut().item_spacing.x = 4.0;
+                    ui.horizontal(|ui| {
+                        #[cfg(feature = "linoss")]
+                        {
+                            ui.label(RichText::new("D-LinOSS: d_in:2|d_model:64|d_out:2|δt:0.1").size(7.0));
+                            ui.separator();
+                            ui.label(RichText::new("✨Real").size(7.0));
+                        }
+                        
+                        #[cfg(not(feature = "linoss"))]
+                        {
+                            ui.label(RichText::new("Simple 3D Oscillator|[x,y,z]|dt:0.001").size(7.0));
+                            ui.separator();
+                            ui.label(RichText::new("⚙️Demo").size(7.0));
+                        }
+                        
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.label(RichText::new("Damped Linear Oscillatory State-Space").size(6.0));
+                        });
+                    });
+                });
             
             egui::SidePanel::left("controls").show(ctx, |ui| {
-                ui.set_width(250.0);
+                ui.set_width(220.0); // Reduced from 250
+                ui.spacing_mut().item_spacing.y = 4.0; // Tighter spacing
                 
-                ui.label("🎛️ Parameters:");
+                ui.label(RichText::new("🎛️ Parameters:").size(12.0).strong());
                 ui.add(egui::Slider::new(&mut self.oscillator.params.frequency, 1.0..=50.0).text("Frequency"));
                 ui.add(egui::Slider::new(&mut self.oscillator.params.damping, 0.0..=1.0).text("Damping"));
                 ui.add(egui::Slider::new(&mut self.oscillator.params.coupling, -2.0..=2.0).text("Coupling"));
@@ -151,54 +190,63 @@ mod wasm {
                     self.time = 0.0;
                 }
                 
-                ui.separator();
-                ui.label(format!("📍 Position: [{:.3}, {:.3}, {:.3}]", 
-                    self.oscillator.state.x, self.oscillator.state.y, self.oscillator.state.z));
+                ui.add_space(4.0);
+                ui.label(RichText::new(&format!("📍 Position: [{:.3}, {:.3}, {:.3}]", 
+                    self.oscillator.state.x, self.oscillator.state.y, self.oscillator.state.z)).size(10.0));
             });
             
             egui::CentralPanel::default().show(ctx, |ui| {
+                // Calculate available height for better space usage
+                let available_height = ui.available_height();
+                let time_series_height = (available_height * 0.6).max(180.0); // 60% of available space, min 180px
+                let phase_height = (available_height * 0.35).max(150.0); // 35% of available space, min 150px
+                
                 ui.vertical(|ui| {
-                    // Time series plot
-                    ui.collapsing("📈 Time Series", |ui| {
-                        Plot::new("time_series")
-                            .height(200.0)
-                            .show(ui, |plot_ui| {
-                                let x_points = PlotPoints::from_iter(self.time_series_x.iter().copied());
-                                let y_points = PlotPoints::from_iter(self.time_series_y.iter().copied());
-                                let z_points = PlotPoints::from_iter(self.time_series_z.iter().copied());
-                                
-                                plot_ui.line(Line::new(x_points).color(Color32::RED).name("X"));
-                                plot_ui.line(Line::new(y_points).color(Color32::GREEN).name("Y"));
-                                plot_ui.line(Line::new(z_points).color(Color32::BLUE).name("Z"));
-                            });
-                    });
-                    
-                    // Phase space plots
-                    ui.collapsing("🌌 Phase Space", |ui| {
-                        ui.horizontal(|ui| {
-                            // XY plot
-                            Plot::new("xy_phase")
-                                .width(200.0)
-                                .height(200.0)
+                    // Time series plot - default open, optimized height
+                    egui::CollapsingHeader::new(RichText::new("📈 Time Series").size(13.0))
+                        .default_open(true)
+                        .show(ui, |ui| {
+                            Plot::new("time_series")
+                                .height(time_series_height)
                                 .show(ui, |plot_ui| {
-                                    let xy_points: PlotPoints = self.history.iter()
-                                        .map(|(_, v)| [v.x as f64, v.y as f64])
-                                        .collect();
-                                    plot_ui.line(Line::new(xy_points).color(Color32::YELLOW).name("XY"));
-                                });
-                            
-                            // XZ plot  
-                            Plot::new("xz_phase")
-                                .width(200.0)
-                                .height(200.0)
-                                .show(ui, |plot_ui| {
-                                    let xz_points: PlotPoints = self.history.iter()
-                                        .map(|(_, v)| [v.x as f64, v.z as f64])
-                                        .collect();
-                                    plot_ui.line(Line::new(xz_points).color(Color32::from_rgb(0, 255, 255)).name("XZ"));
+                                    let x_points = PlotPoints::from_iter(self.time_series_x.iter().copied());
+                                    let y_points = PlotPoints::from_iter(self.time_series_y.iter().copied());
+                                    let z_points = PlotPoints::from_iter(self.time_series_z.iter().copied());
+                                    
+                                    plot_ui.line(Line::new(x_points).color(Color32::RED).name("X"));
+                                    plot_ui.line(Line::new(y_points).color(Color32::GREEN).name("Y"));
+                                    plot_ui.line(Line::new(z_points).color(Color32::BLUE).name("Z"));
                                 });
                         });
-                    });
+                    
+                    // Phase space plots - default open, optimized layout
+                    egui::CollapsingHeader::new(RichText::new("🌌 Phase Space").size(13.0))
+                        .default_open(true)
+                        .show(ui, |ui| {
+                            ui.horizontal(|ui| {
+                                // XY plot - optimized size
+                                Plot::new("xy_phase")
+                                    .width(phase_height * 1.2) // Slightly wider than tall
+                                    .height(phase_height)
+                                    .show(ui, |plot_ui| {
+                                        let xy_points: PlotPoints = self.history.iter()
+                                            .map(|(_, v)| [v.x as f64, v.y as f64])
+                                            .collect();
+                                        plot_ui.line(Line::new(xy_points).color(Color32::YELLOW).name("XY"));
+                                    });
+                                
+                                // XZ plot - optimized size
+                                Plot::new("xz_phase")
+                                    .width(phase_height * 1.2) // Slightly wider than tall
+                                    .height(phase_height)
+                                    .show(ui, |plot_ui| {
+                                        let xz_points: PlotPoints = self.history.iter()
+                                            .map(|(_, v)| [v.x as f64, v.z as f64])
+                                            .collect();
+                                        plot_ui.line(Line::new(xz_points).color(Color32::from_rgb(0, 255, 255)).name("XZ"));
+                                    });
+                            });
+                        });
                 });
             });
         }

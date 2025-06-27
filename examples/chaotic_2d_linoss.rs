@@ -82,7 +82,7 @@ struct App<B: Backend> {
 #[allow(dead_code)]
 impl<B: Backend> App<B>
 where
-    B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distributions::uniform::SampleUniform + PartialOrd + std::fmt::Debug + 'static,
+    B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distr::uniform::SampleUniform + PartialOrd + std::fmt::Debug + 'static,
     B::IntElem: Element + From<i32> + ElementConversion + Copy + std::fmt::Debug + 'static,
 {
     #[allow(dead_code)]
@@ -256,7 +256,7 @@ fn run_chaotic_linoss_tui<B: Backend>(
     tick_rate: Duration,
 ) -> Result<(), Box<dyn Error>>
 where
-    B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distributions::uniform::SampleUniform + PartialOrd + std::fmt::Debug,
+    B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distr::uniform::SampleUniform + PartialOrd + std::fmt::Debug,
     B::IntElem: Element + From<i32> + ElementConversion + Copy + std::fmt::Debug,
 {
     let mut last_tick = std::time::Instant::now();
@@ -288,7 +288,7 @@ where
 #[allow(dead_code)]
 fn ui<B: Backend>(f: &mut Frame, app: &App<B>)
 where
-    B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distributions::uniform::SampleUniform + PartialOrd + std::fmt::Debug,
+    B::FloatElem: Element + From<f32> + ElementConversion + std::ops::Mul<Output = B::FloatElem> + Copy + rand::distr::uniform::SampleUniform + PartialOrd + std::fmt::Debug,
     B::IntElem: Element + From<i32> + ElementConversion + Copy + std::fmt::Debug,
 {
     let main_chunks = Layout::default()

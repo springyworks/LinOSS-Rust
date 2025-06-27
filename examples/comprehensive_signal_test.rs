@@ -12,7 +12,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("- SIGTERM (timeout default)");
     println!("- SIGINT (Ctrl+C)");
     println!("- SIGKILL (cannot be caught, but terminal will still be clean)");
-    println!("");
     
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();

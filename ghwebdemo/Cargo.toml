@@ -6,40 +6,45 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
-[[bin]]
-name = "linoss_web_visualizer"
-path = "src/bin/linoss_web_visualizer_simple.rs"
-
 [dependencies]
-# UI and visualization
-egui = "0.29"
-egui_plot = "0.29"
-eframe = { version = "0.29", features = ["wgpu"] }
-env_logger = "0.10"
-wgpu = { version = "25.0", optional = true }
+# Burn components as optional dependencies (following copilot.md guidance)
+burn-tensor = { path = "/home/rustuser/projects/from_github/burn/crates/burn-tensor", default-features = false, features = ["std"], optional = true }
+burn-ndarray = { path = "/home/rustuser/projects/from_github/burn/crates/burn-ndarray", default-features = false, optional = true }
+burn-autodiff = { path = "/home/rustuser/projects/from_github/burn/crates/burn-autodiff", default-features = false, optional = true }
 
-# WASM support
+# D-LinOSS dependencies (minimal, without std)
+linoss_rust = { path = "..", default-features = false, features = ["wasm"], optional = true }
+
+# Core WASM dependencies
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 console_error_panic_hook = "0.1"
-js-sys = "0.3"
-web-sys = "0.3"
+wasm-logger = "0.2"
 
-# Math and utilities (WASM-compatible versions)
+# JSON serialization for data export
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# egui for web UI (WASM-compatible) - enable 'glow' feature for web rendering
+eframe = { version = "0.29", default-features = false, features = ["glow"] }
+egui = "0.29"
+egui_plot = "0.29"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement", "console"] }
+
+# WASM random number generation (force compatibility as per copilot.md)
+getrandom = { version = "0.3", features = ["wasm_js"] }
+
+# Math utilities (keep for fallback mode)
 nalgebra = { version = "0.33", default-features = false }
 
-# Animation support
-image = { version = "0.25", features = ["gif"] }
-egui_extras = { version = "0.29", features = ["image"] }
-
-# Local Burn framework (WASM-compatible) - DISABLED for now due to getrandom issues
-# burn = { path = "/home/rustuser/projects/from_github/burn/crates/burn", features = ["wgpu"], default-features = false }
-
-# LinOSS from the parent crate - DISABLED for now due to Burn dependency
-# linoss_rust = { path = ".." }
-
 [features]
-default = []
-gpu = ["wgpu"]
+default = ["minimal-burn"]
+burn = ["dep:burn-tensor", "dep:burn-ndarray", "dep:burn-autodiff"]
+minimal-burn = ["dep:burn-tensor", "dep:burn-ndarray"]
+linoss = ["burn", "dep:linoss_rust"]
+
+[profile.release]
+opt-level = "s"
+lto = true
 
 

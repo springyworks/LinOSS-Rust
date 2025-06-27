@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>LinOSS Web Demo - Interactive Neural Oscillator Visualization</title>
     <link rel="stylesheet" href="assets/style.css">
     <style>
@@ -17,14 +20,14 @@
         
         .header {
             text-align: center;
-            padding: 20px;
+            padding: 8px;
             background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
         }
         
         .header h1 {
             margin: 0;
-            font-size: 2.5em;
+            font-size: 1.2em;
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -32,24 +35,24 @@
         }
         
         .header p {
-            margin: 10px 0 0 0;
+            margin: 4px 0 0 0;
             opacity: 0.9;
-            font-size: 1.1em;
+            font-size: 0.85em;
         }
         
         .demo-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 8px;
         }
         
         .demo-panel {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 8px;
+            padding: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
         
         #linoss_canvas {
@@ -121,10 +124,10 @@
 
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 2em;
+                font-size: 1.1em;
             }
             .demo-container {
-                padding: 10px;
+                padding: 4px;
             }
             #linoss_canvas {
                 height: 400px;
@@ -144,9 +147,6 @@
 
     <main class="demo-container">
         <div class="demo-panel">
-            <h2>🚀 Live Neural Simulation</h2>
-            <p>Real-time visualization of coupled neural oscillators using D-LinOSS architecture</p>
-            
             <div id="wasm-loading" class="loading">
                 🔄 Loading neural simulation... Please wait
             </div>
@@ -201,6 +201,17 @@
                 The D-LinOSS variant uses diagonal parameterization for efficient computation while 
                 maintaining the expressive power needed for neural signal modeling and brain dynamics simulation.
             </p>
+            <div class="dlinoss-dimensions" style="margin-top: 20px; padding: 15px; background: rgba(0, 122, 255, 0.1); border-left: 4px solid #007AFF; border-radius: 8px;">
+                <h4 style="margin: 0 0 10px 0; color: #007AFF;">🔢 D-LinOSS Architecture Dimensions</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-family: 'Courier New', monospace;">
+                    <div><strong>Input Dimension:</strong> 2 (x, y coordinates)</div>
+                    <div><strong>Hidden Dimension:</strong> 16 (oscillatory pairs)</div>
+                    <div><strong>Output Dimension:</strong> 2 (phase space)</div>
+                    <div><strong>Architecture:</strong> Diagonal Linear Oscillating State Space</div>
+                    <div><strong>Backend:</strong> Burn-NdArray (WASM-optimized)</div>
+                    <div><strong>Compute:</strong> Real-time neural dynamics</div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -209,8 +220,9 @@
         
         async function run() {
             try {
-                // Initialize the WASM module
-                await init('./wasm/linoss_web_demo_bg.wasm');
+                // Initialize the WASM module with cache busting (new object format)
+                const timestamp = Date.now();
+                await init({ module_or_path: `./wasm/linoss_web_demo_bg.wasm?v=${timestamp}` });
                 
                 // Hide loading indicator
                 document.getElementById('wasm-loading').style.display = 'none';

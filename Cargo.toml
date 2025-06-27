@@ -9,10 +9,6 @@ name = "linoss_rust"
 path = "src/main.rs"
 
 [[bin]]
-name = "ratatuitest"
-path = "src/bin/ratatuitest.rs"
-
-[[bin]]
 name = "animatedRataui"
 path = "src/bin/animatedRataui.rs"
 
@@ -24,47 +20,56 @@ path = "examples/train_linoss.rs"
 # Burn ML framework with conditional features
 burn = { path = "/home/rustuser/projects/from_github/burn/crates/burn", features = [
     "ndarray",
-    "autodiff", 
-    "wgpu",
+    "autodiff",
     "std",
+    "dataset"
 ], default-features = false }
 nalgebra = { version = "0.33.2" }
-rand = { version = "0.8.5", features = ["std_rng"] }
+rand = { version = "0.9", features = ["std_rng"] }
 ndarray = "0.16"
-ratatui = { version = "0.29.0", features = ["crossterm"] }
-crossterm = "0.29.0"
 log = "0.4"
 env_logger = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1", features = ["full"] }
+num-traits = "0.2"
+tokio = { version = "1", features = ["sync", "time", "macros", "rt"] }
 plotters = "0.3.6"
-plotters-ratatui-backend = "0.3.0" # Corrected to plotters-ratatui-backend
-num-traits = "0.2" # Added num-traits
-ndarray-npy = "0.9.1"
-anyhow = "1.0"
-libc = "0.2" # For low-level system calls and O_NONBLOCK
-ctrlc = "3.4" # For signal handling
-tokio-tungstenite = "0.21" # WebSocket support for burn profiler bridge
-futures-util = "0.3" # For WebSocket stream handling
 
-# egui for native GUI applications
+# Optional dependencies
+ratatui = { version = "0.29", optional = true }
+crossterm = { version = "0.28", optional = true }
+anyhow = { version = "1.0", optional = true }
+ctrlc = { version = "3.4", optional = true }
+ndarray-npy = { version = "0.8", optional = true }
+tokio-tungstenite = { version = "0.24", optional = true }
+futures-util = { version = "0.3", optional = true }
+libc = { version = "0.2", optional = true }
+
+# egui for native GUI applications (always available)
 eframe = "0.31.1"
 egui = "0.31.1"
 egui_extras = { version = "0.31.1", features = ["image", "svg"] }
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["full"] }
+
 [dev-dependencies]
 tempfile = "3.0"
 
-#dess = { path = "/home/rustuser/rustdev/de-system-solver_kos/dess", version = "0.1.0" }
-#ode_solvers = "0.6"
-
 [features]
-default = ["ndarray_backend", "wgpu_backend", "dataset"]
-ndarray_backend = ["burn/ndarray", "burn/autodiff"]
-wgpu_backend = ["burn/wgpu", "burn/autodiff"]
-dataset = ["burn/dataset"]  # Optional dataset feature
-burn = []  # Feature for web demo compatibility
+default = ["ndarray_backend", "visualization"]
+visualization = ["dep:ratatui", "dep:crossterm", "dep:anyhow", "dep:ctrlc"]
+ndarray_backend = []
+wgpu_backend = []
+websocket = ["dep:tokio-tungstenite", "dep:futures-util"]
+npy_files = ["dep:ndarray-npy"]
+libc = ["dep:libc"]
+wasm = ["ndarray_backend"]
+checkpoint = []
+checkpoint_full = ["dep:anyhow"]
 
 # Custom build profiles for development optimization
 [profile.dev]
@@ -95,7 +100,3 @@ opt-level = 2        # Good optimization, faster than level 3
 lto = "thin"         # Faster LTO
 codegen-units = 4    # Parallel compilation
 debug = false
-
-# WASM-specific dependencies
-[target.wasm32-unknown-unknown.dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"] }

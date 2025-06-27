@@ -16,7 +16,8 @@ fi
 rustup target add wasm32-unknown-unknown
 
 echo "📦 Building WASM module..."
-wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo --features gpu
+# Use linoss feature for full D-LinOSS functionality
+wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo --features linoss
 
 echo "🧹 Cleaning up unnecessary files..."
 cd wasm

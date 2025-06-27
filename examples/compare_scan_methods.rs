@@ -37,7 +37,7 @@ fn main() {
 fn run_benchmark<B: Backend>(device: B::Device, backend_name: &str)
 where
     B::FloatElem: burn::tensor::Element
-        + rand::distributions::uniform::SampleUniform // For Tensor::random
+        + rand::distr::uniform::SampleUniform // For Tensor::random
         + From<f32>
         + std::ops::Mul<Output = B::FloatElem>
         + Copy

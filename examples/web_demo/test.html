@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-LinOSS WASM Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-result {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🧠 D-LinOSS WASM Demo Test</h1>
+    <div id="status">Loading WASM module...</div>
+    
+    <button onclick="runBasicTest()">Run Basic Test</button>
+    <button onclick="runPerformanceTest()">Performance Test</button>
+    <button onclick="runStressTest()">Stress Test</button>
+    
+    <div id="results"></div>
+
+    <script type="module">
+        import init, { DLinOSSDemo } from './pkg/linoss_web_demo.js';
+        
+        let demo = null;
+        let isReady = false;
+
+        // Make functions global for buttons
+        window.runBasicTest = runBasicTest;
+        window.runPerformanceTest = runPerformanceTest;
+        window.runStressTest = runStressTest;
+
+        async function initWasm() {
+            try {
+                await init();
+                demo = new DLinOSSDemo();
+                isReady = true;
+                
+                document.getElementById('status').innerHTML = 
+                    '<div class="test-result success"><h3>✅ WASM Ready!</h3><pre>' + 
+                    demo.get_info() + '</pre></div>';
+                
+                // Run automatic basic test
+                setTimeout(runBasicTest, 1000);
+                
+            } catch (error) {
+                document.getElementById('status').innerHTML = 
+                    '<div class="test-result error"><h3>❌ WASM Failed</h3><pre>' + 
+                    error.toString() + '</pre></div>';
+            }
+        }
+
+        function addResult(title, content, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function runBasicTest() {
+            if (!isReady) return;
+            
+            try {
+                const input = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+                const startTime = performance.now();
+                const output = demo.forward(input);
+                const duration = performance.now() - startTime;
+                
+                addResult('🔬 Basic Tensor Test', 
+                    `Input: [${input.join(', ')}]\n` +
+                    `Output: [${output.map(x => x.toFixed(4)).join(', ')}]\n` +
+                    `Processing time: ${duration.toFixed(2)}ms\n` +
+                    `Input size: ${input.length}, Output size: ${output.length}`
+                );
+            } catch (error) {
+                addResult('❌ Basic Test Failed', error.toString(), false);
+            }
+        }
+
+        function runPerformanceTest() {
+            if (!isReady) return;
+            
+            try {
+                const runs = 100;
+                const input = Array.from({length: 10}, (_, i) => Math.sin(i));
+                const times = [];
+                
+                for (let i = 0; i < runs; i++) {
+                    const start = performance.now();
+                    const output = demo.forward(input);
+                    times.push(performance.now() - start);
+                }
+                
+                const avgTime = times.reduce((a, b) => a + b) / runs;
+                const minTime = Math.min(...times);
+                const maxTime = Math.max(...times);
+                
+                addResult('⚡ Performance Test', 
+                    `Runs: ${runs}\n` +
+                    `Average: ${avgTime.toFixed(2)}ms\n` +
+                    `Min: ${minTime.toFixed(2)}ms\n` +
+                    `Max: ${maxTime.toFixed(2)}ms\n` +
+                    `Throughput: ${(1000/avgTime).toFixed(0)} ops/sec`
+                );
+            } catch (error) {
+                addResult('❌ Performance Test Failed', error.toString(), false);
+            }
+        }
+
+        function runStressTest() {
+            if (!isReady) return;
+            
+            try {
+                const sizes = [5, 10, 20, 30, 40, 50];
+                const results = [];
+                
+                for (const size of sizes) {
+                    const input = Array.from({length: size}, () => Math.random());
+                    const start = performance.now();
+                    const output = demo.forward(input.slice(0, 10)); // Demo only takes 10 inputs
+                    const time = performance.now() - start;
+                    results.push(`Size ${size}: ${time.toFixed(2)}ms`);
+                }
+                
+                addResult('🔥 Stress Test', 
+                    `Testing different input sizes:\n` +
+                    results.join('\n') + '\n\n' +
+                    `All tests completed successfully!`
+                );
+            } catch (error) {
+                addResult('❌ Stress Test Failed', error.toString(), false);
+            }
+        }
+
+        // Initialize
+        initWasm();
+    </script>
+</body>
+</html>

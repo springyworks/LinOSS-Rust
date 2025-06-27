@@ -6,64 +6,36 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
-[features]
-default = []
-burn = ["dep:burn-tensor", "dep:burn-ndarray", "dep:burn-autodiff"]
-minimal-burn = ["dep:burn-tensor", "dep:burn-ndarray", "dep:burn-autodiff"]
-
 [dependencies]
-# Core dependencies
-nalgebra = { version = "0.33.2", default-features = false }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+# Burn components as optional dependencies (following copilot.md guidance)
+burn-tensor = { path = "/home/rustuser/projects/from_github/burn/crates/burn-tensor", default-features = false, features = ["std"], optional = true }
+burn-ndarray = { path = "/home/rustuser/projects/from_github/burn/crates/burn-ndarray", default-features = false, optional = true }
+burn-autodiff = { path = "/home/rustuser/projects/from_github/burn/crates/burn-autodiff", default-features = false, optional = true }
 
-# WASM and web dependencies
+# D-LinOSS dependencies (minimal, without std)
+linoss_rust = { path = "../..", default-features = false, features = ["wasm"], optional = true }
+
+# Core WASM dependencies
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
-js-sys = "0.3"
 console_error_panic_hook = "0.1"
-web-sys = { version = "0.3", features = [
-    "console",
-    "Document",
-    "Element",
-    "EventTarget",
-    "HtmlCanvasElement",
-    "HtmlElement", 
-    "MouseEvent",
-    "Window",
-    "WebGl2RenderingContext",
-    "WebGlRenderingContext",
-    "Navigator",
-    "Clipboard",
-    "ClipboardEvent",
-    "GpuCanvasContext",
-    "OffscreenCanvas",
-] }
+wasm-logger = "0.2"
 
-# egui for web GUI - using both wgpu and glow as fallback
-eframe = { version = "0.31.1", default-features = false, features = ["wgpu", "glow"] }
-egui = "0.31.1"
-egui_extras = { version = "0.31.1", features = ["image"] }
-wgpu = "24.0"
+# egui for web UI (WASM-compatible) - enable 'glow' feature for web rendering
+eframe = { version = "0.31", default-features = false, features = ["glow"] }
+egui = "0.31"
+egui_plot = "0.31"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement", "console"] }
 
-# Force getrandom 0.3 with wasm_js feature for all dependencies
+# WASM random number generation (force compatibility as per copilot.md)
 getrandom = { version = "0.3", features = ["wasm_js"] }
 
-# Burn ML framework - using only essential tensor components for WASM
-burn-tensor = { path = "/home/rustuser/projects/from_github/burn/crates/burn-tensor", default-features = false, features = ["std"], optional = true }
-burn-ndarray = { path = "/home/rustuser/projects/from_github/burn/crates/burn-ndarray", default-features = false, features = ["std"], optional = true }
-burn-autodiff = { path = "/home/rustuser/projects/from_github/burn/crates/burn-autodiff", default-features = false, features = ["std"], optional = true }
+[features]
+default = ["minimal-burn"]
+burn = ["dep:burn-tensor", "dep:burn-ndarray", "dep:burn-autodiff"]
+minimal-burn = ["dep:burn-tensor", "dep:burn-ndarray"]
+linoss = ["burn", "dep:linoss_rust"]
 
-# LinossRust main library for D-LinOSS layer (without dataset for WASM compatibility)
-linoss_rust = { path = "../..", default-features = false, features = ["burn"], optional = true }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-# No additional dependencies needed - getrandom 0.3 with web_js feature is already specified above
-
-# Enable optimizations for WASM
 [profile.release]
 opt-level = "s"
 lto = true
-
-[profile.dev]
-debug = 1

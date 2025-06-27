@@ -439,11 +439,12 @@ impl PureBrainRegion {
             self.previous_position = self.position;
 
             // Add small random noise to simulate neural noise and make dynamics interesting
-            let mut rng = rand::thread_rng();
+            let mut rng = rand::rng();
             let noise_scale = 0.1;
-            let noise_x = (rng.gen::<f32>() - 0.5) * noise_scale;
-            let noise_y = (rng.gen::<f32>() - 0.5) * noise_scale;
-            let noise_z = (rng.gen::<f32>() - 0.5) * noise_scale;
+            let mut vec = Vec::new();
+            vec.push(rng.random::<f32>() * 2.0 - 1.0);
+            vec.push(rng.random::<f32>() * 2.0 - 1.0);
+            vec.push(rng.random::<f32>() * 2.0 - 1.0);
 
             // Create dynamic input that changes over time with larger amplitude
             let time_factor = (time * 0.5).sin() as f32;
@@ -459,9 +460,9 @@ impl PureBrainRegion {
             // Add coupling as external input with noise
             let coupling_tensor = Tensor::<B, 2>::from_floats(
                 [[
-                    coupling_input.0 as f32 + noise_x,
-                    coupling_input.1 as f32 + noise_y,
-                    coupling_input.2 as f32 + noise_z,
+                    coupling_input.0 as f32 + vec[0] as f32 * noise_scale,
+                    coupling_input.1 as f32 + vec[1] as f32 * noise_scale,
+                    coupling_input.2 as f32 + vec[2] as f32 * noise_scale,
                 ]],
                 &state.device(),
             );
@@ -894,14 +895,28 @@ impl InstrumentationManager {
         let pipe_data = format!("{}\n", serde_json::to_string(data)?);
 
         // Use O_NONBLOCK to avoid any blocking behavior
+        #[cfg(feature = "libc")]
         use std::os::unix::fs::OpenOptionsExt;
+        #[cfg(feature = "libc")]
         use std::os::unix::io::AsRawFd;
 
         // Open with O_NONBLOCK flag for immediate return
-        match OpenOptions::new()
-            .write(true)
-            .custom_flags(libc::O_NONBLOCK)
-            .open(&self.pipe_path)
+        let result = {
+            #[cfg(feature = "libc")]
+            {
+                OpenOptions::new()
+                    .write(true)
+                    .custom_flags(libc::O_NONBLOCK)
+                    .open(&self.pipe_path)
+            }
+            #[cfg(not(feature = "libc"))]
+            {
+                OpenOptions::new()
+                    .write(true)
+                    .open(&self.pipe_path)
+            }
+        };
+        match result
         {
             Ok(mut file) => {
                 // Try to write immediately - if pipe buffer is full, it will return EAGAIN
@@ -911,6 +926,7 @@ impl InstrumentationManager {
                         let _ = file.flush();
 
                         // Optional: force kernel to flush pipe buffer immediately
+                        #[cfg(feature = "libc")]
                         unsafe {
                             libc::fsync(file.as_raw_fd());
                         }

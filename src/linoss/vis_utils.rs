@@ -1,3 +1,5 @@
+#![cfg(feature = "visualization")]
+
 // src/linoss/vis_utils.rs
 
 use ratatui::{

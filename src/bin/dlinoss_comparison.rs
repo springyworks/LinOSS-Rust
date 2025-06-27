@@ -41,7 +41,7 @@ fn generate_test_signal<B: Backend>(
                 let time = t as f32 * 0.1;
                 let freq = 0.5 + (d as f32) * 0.3;
                 let signal = (time * freq * 2.0 * std::f32::consts::PI).sin();
-                let noise_val: f32 = rng.gen();
+                let noise_val: f32 = rng.random();
                 let noise = (noise_val - 0.5) * 0.1;
                 data[idx] = signal + noise;
             }

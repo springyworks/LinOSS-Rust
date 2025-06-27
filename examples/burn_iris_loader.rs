@@ -1,19 +1,26 @@
 // examples/burn_iris_loader.rs
 // Minimal example: Load iris_features.npy and iris_labels.npy, wrap as Burn dataset, use DataLoader
 
+#[cfg(feature = "npy_files")]
 use burn::data::dataloader::Dataset;
+#[cfg(feature = "npy_files")]
 use burn::backend::ndarray::{NdArray, NdArrayDevice};
+#[cfg(feature = "npy_files")]
 use burn::tensor::Tensor;
+#[cfg(feature = "npy_files")]
 use ndarray_npy::read_npy;
+#[cfg(feature = "npy_files")]
 use std::sync::Arc;
 
 // Custom dataset struct for Burn
+#[cfg(feature = "npy_files")]
 struct IrisDataset {
     features: Arc<Vec<[f32; 4]>>,
     labels: Arc<Vec<u8>>,
     device: NdArrayDevice,
 }
 
+#[cfg(feature = "npy_files")]
 impl Dataset<(Tensor<NdArray, 2>, Tensor<NdArray, 1>)> for IrisDataset {
     fn get(&self, index: usize) -> Option<(Tensor<NdArray, 2>, Tensor<NdArray, 1>)> {
         let x = self.features.get(index)?;
@@ -27,6 +34,13 @@ impl Dataset<(Tensor<NdArray, 2>, Tensor<NdArray, 1>)> for IrisDataset {
     }
 }
 
+#[cfg(not(feature = "npy_files"))]
+fn main() {
+    println!("⚠️  This example requires the 'npy_files' feature to be enabled.");
+    println!("   Run with: cargo run --example burn_iris_loader --features npy_files");
+}
+
+#[cfg(feature = "npy_files")]
 fn main() -> anyhow::Result<()> {
     // Load features and labels from .npy
     let features_path = "datastore/processed-by-python/iris_features.npy";

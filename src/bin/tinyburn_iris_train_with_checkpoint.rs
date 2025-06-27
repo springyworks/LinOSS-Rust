@@ -1,6 +1,9 @@
 // Minimal Burn-based training example for Iris dataset with model saving/loading
 // File: src/bin/tinyburn_iris_train_with_checkpoint.rs
 
+#[cfg(feature = "npy_files")]
+mod npy_training {
+
 use burn::backend::{NdArray, Autodiff};
 use burn::tensor::{Tensor, backend::Backend};
 use burn::module::Module;
@@ -96,7 +99,7 @@ where
     Ok(model)
 }
 
-fn main() -> Result<()> {
+fn training_main() -> Result<()> {
     // Configuration
     let features: ndarray::Array2<f32> = read_npy("datastore/processed-by-python/iris_features.npy")?;
     let labels: ndarray::Array1<u8> = read_npy("datastore/processed-by-python/iris_labels.npy")?;
@@ -201,4 +204,17 @@ fn main() -> Result<()> {
     println!("  - Final parameters: {}", modelparams_final_path);
     
     Ok(())
+}
+
+}
+
+#[cfg(not(feature = "npy_files"))]
+fn main() {
+    println!("NPY file I/O requires 'npy_files' feature. Enable it with:");
+    println!("cargo run --features npy_files --bin tinyburn_iris_train_with_checkpoint");
+}
+
+#[cfg(feature = "npy_files")]
+fn main() -> anyhow::Result<()> {
+    npy_training::training_main()
 }

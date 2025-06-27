@@ -20,9 +20,6 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     
     steps:
@@ -41,7 +38,13 @@ jobs:
       run: |
         # Build the LinOSS web demo
         cd ghwebdemo
-        wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo
+        # Add WASM target
+        rustup target add wasm32-unknown-unknown
+        # Build with linoss features (full D-LinOSS functionality)
+        wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo --features linoss
+        # Clean up unnecessary files
+        cd wasm
+        rm -f .gitignore package.json README.md
         echo "✅ WASM build completed successfully"
         
     - name: Setup Pages

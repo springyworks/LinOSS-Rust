@@ -141,12 +141,12 @@ impl AppState {
             // Horizontal movement
             if self.terminal_width > 0 { // Avoid issues if not yet initialized
                 if self.last_horizontal_target_update.elapsed() >= HORIZONTAL_TARGET_UPDATE_INTERVAL {
-                    let mut rng = rand::thread_rng(); // Corrected: Use thread_rng()
+                    let mut rng = rand::rng(); // Fixed: Use rng() instead of thread_rng()
                     // Target range for center_x, ensuring it respects the safe_margins
                     let min_target_x = safe_margin_for_center_x.max(self.terminal_width as f64 * 0.25);
                     let max_target_x = (self.terminal_width as f64 - safe_margin_for_center_x).min(self.terminal_width as f64 * 0.75);
                     if min_target_x < max_target_x { // Ensure valid range
-                        self.horizontal_target_x = rng.gen_range(min_target_x..max_target_x); // Corrected: Use gen_range
+                        self.horizontal_target_x = rng.random_range(min_target_x..max_target_x); // Fixed: Use random_range
                     }
                     self.last_horizontal_target_update = Instant::now();
                 }
@@ -234,11 +234,11 @@ impl TokioTuiApp for AppState {
         // Recalculate horizontal center and target
         if old_width == 0 { // First time initialization
             self.center_x = width as f64 / 2.0;
-            let mut rng = rand::thread_rng(); // Corrected: Use thread_rng()
+            let mut rng = rand::rng(); // Fixed: Use rng() instead of thread_rng()
             let min_target_x = safe_margin_for_center_x.max(width as f64 * 0.25);
             let max_target_x = (width as f64 - safe_margin_for_center_x).min(width as f64 * 0.75);
             if min_target_x < max_target_x {
-                 self.horizontal_target_x = rng.gen_range(min_target_x..max_target_x); // Corrected: Use gen_range
+                 self.horizontal_target_x = rng.random_range(min_target_x..max_target_x); // Fixed: Use random_range
             } else {
                 self.horizontal_target_x = width as f64 / 2.0; // Default to center if range is invalid
             }
