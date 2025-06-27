@@ -3,9 +3,8 @@ name: Deploy Web Demo to GitHub Pages
 on:
   push:
     branches: [ main, master ]
-    paths: 
+    paths:
       - 'ghwebdemo/**'
-      - 'examples/egui_native/**'
       - '.github/workflows/deploy-web-demo.yml'
   workflow_dispatch:
 
@@ -16,45 +15,38 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Setup Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: wasm32-unknown-unknown
-        
-    - name: Install wasm-pack
-      run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      
-    - name: Build WASM demos
-      run: |
-        # Build the LinOSS web demo
-        cd ghwebdemo
-        # Add WASM target
-        rustup target add wasm32-unknown-unknown
-        # Build with linoss features (full D-LinOSS functionality)
-        wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo --features linoss
-        # Clean up unnecessary files
-        cd wasm
-        rm -f .gitignore package.json README.md
-        echo "✅ WASM build completed successfully"
-        
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: 'ghwebdemo'
-        
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build WASM demo
+        run: |
+          cd ghwebdemo
+          wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo --features linoss
+          # Clean up unnecessary files from the wasm output directory
+          rm -f wasm/.gitignore wasm/package.json wasm/README.md
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'ghwebdemo'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
