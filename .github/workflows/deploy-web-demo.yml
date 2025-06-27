@@ -28,17 +28,16 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      - name: Build WASM demo
-        run: |
-          cd ghwebdemo
-          wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo --features linoss
-          # Clean up unnecessary files from the wasm output directory
-          rm -f wasm/.gitignore wasm/package.json wasm/README.md
+        run: cargo install wasm-pack
+      - name: Build WASM
+        run: wasm-pack build --target web --out-dir wasm --out-name linoss_web_demo --features linoss
+        working-directory: ./ghwebdemo
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'ghwebdemo'
+          path: './ghwebdemo/wasm'
 
   deploy:
     needs: build
