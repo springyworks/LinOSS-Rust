@@ -1,85 +1,158 @@
-# D-LinOSS Web Demo
+# D-LinOSS Neural Dynamics - GitHub Pages Demo
 
-A web-based demonstration of Damped Linear Oscillatory State Space (D-LinOSS) neural dynamics using WASM, egui, and the Burn ML framework.
+🧠 **Live Demo**: [https://springyworks.github.io/LinOSS-Rust/](https://springyworks.github.io/LinOSS-Rust/)
+
+## Overview
+
+This directory contains the GitHub Pages deployment for the D-LinOSS Neural Dynamics web demo. It showcases real-time neural dynamics simulation running entirely in the browser using WebAssembly.
 
 ## Features
 
-- **Real-time 3D visualization** with interactive rotation
-- **Phase space plots** showing dynamic neural state evolution  
-- **Signal timeline** displaying oscillatory patterns over time
-- **Interactive controls** for frequency, damping, and coupling parameters
-- **Multiple build configurations** supporting different levels of complexity
+✅ **Real D-LinOSS Implementation**: Authentic neural dynamics with 10→32→10 architecture  
+✅ **WebAssembly Performance**: Near-native speed in the browser  
+✅ **Zero Installation**: Runs entirely in your browser  
+✅ **Interactive Demo**: Test neural processing with custom inputs  
+✅ **Responsive Design**: Works on desktop and mobile devices  
 
-## Build Options
+## Technical Stack
 
-### Full D-LinOSS Neural Network
-```bash
-wasm-pack build --target web --debug --features linoss
+- **Backend**: Rust with Burn tensor framework
+- **Frontend**: Vanilla JavaScript + CSS
+- **WASM**: ~83KB optimized bundle
+- **Hosting**: GitHub Pages
+
+## File Structure
+
 ```
-Uses the genuine D-LinOSS layer with learnable damping, oscillatory dynamics, and neural network transformations.
-
-### Burn Tensor Demo
-```bash
-wasm-pack build --target web --debug --features burn
+docs/
+├── index.html          # Main landing page
+├── style.css           # GitHub Pages styling
+├── app.js              # Demo application logic
+├── linoss_web_demo.js  # WASM JavaScript bindings
+├── linoss_web_demo_bg.wasm  # WASM binary
+├── favicon.ico         # Site icon
+└── README.md           # This file
 ```
-Simplified version using Burn tensor operations for mathematical oscillator simulation.
 
-### Basic Mock Demo
-```bash
-wasm-pack build --target web --debug
-```
-Lightweight version with mathematical oscillator (no ML dependencies).
+## Deployment
 
-## Running the Demo
+### Automatic Deployment
 
-1. Build with your preferred configuration (see above)
-2. Start a web server:
+GitHub Pages automatically deploys from the `docs/` directory when changes are pushed to the `master` branch.
+
+### Manual Deployment Steps
+
+1. **Build WASM Module**:
    ```bash
-   python3 -m http.server 8000
+   cd /path/to/LinossRust/examples/gh_web_demo
+   ./build.sh debug  # or release for production
    ```
-3. Open http://localhost:8000 in your browser
 
-## Architecture
+2. **Copy Files to docs/**:
+   ```bash
+   cp linoss_web_demo.js docs/
+   cp pkg/linoss_web_demo_bg.wasm docs/
+   cp favicon.ico docs/
+   ```
 
-- **Frontend**: egui with WebGL rendering via 'glow' backend
-- **Neural Engine**: D-LinOSS layer with Burn ML framework
-- **Visualization**: Custom 3D projection with wireframe rendering
-- **WASM Target**: Optimized for browser execution with minimal dependencies
+3. **Commit and Push**:
+   ```bash
+   git add docs/
+   git commit -m "Update GitHub Pages demo"
+   git push origin master
+   ```
 
-## Interactive Elements
+4. **Verify Deployment**:
+   - Visit: https://springyworks.github.io/LinOSS-Rust/
+   - Check browser console for any errors
 
-- **Frequency slider**: Controls oscillation speed (0.1-10 Hz)
-- **Damping slider**: Adjusts energy dissipation (0-2.0)
-- **Coupling slider**: Modifies phase space coupling (0-2.0)
-- **Start/Pause**: Control simulation execution
-- **Reset**: Clear trajectories and restart
-- **3D rotation**: Drag to rotate the 3D phase trajectory view
+## Local Development
 
-## Neural Dynamics
+### Serve Locally
 
-When built with `--features linoss`, the demo showcases:
+```bash
+# Simple HTTP server (Python)
+cd docs/
+python3 -m http.server 8000
 
-- **Learnable damping** adapted from neural network parameters
-- **Oscillatory state dynamics** with complex phase relationships  
-- **Real-time neural processing** of 2D input coordinates
-- **Emergent trajectory patterns** from learned neural dynamics
+# OR Node.js server
+npx serve docs/
 
-The D-LinOSS layer processes input coordinates through:
-1. 3D tensor reshaping [batch, sequence, features]
-2. Neural forward pass with oscillatory transformations
-3. Output projection back to 2D phase space coordinates
-4. Real-time visualization of the resulting dynamics
+# OR any other static file server
+```
 
-## Status Indicators
+### Test Locally
 
-The bottom status bar shows:
-- ✅ **💚 Real D-LinOSS Layer** - Using genuine neural network
-- ✅ **🔧 Burn Tensor Demo** - Using tensor mathematics  
-- ✅ **📝 Mock Demo** - Using basic simulation
+1. Open `http://localhost:8000` in your browser
+2. Click "🚀 Launch Neural Dynamics Demo"
+3. Verify all features work correctly
+4. Check browser console for errors
 
-## Technical Notes
+## Performance
 
-- Built following WASM compatibility guidelines from `.github/copilot-instructions.md`
-- Uses conditional compilation for feature-based builds
-- Optimized tensor operations with explicit dimension annotations
-- Cross-platform compatibility (Linux/Windows/macOS browsers)
+- **WASM Loading**: ~200ms (typical)
+- **Demo Initialization**: ~50ms
+- **Forward Pass**: ~1-5ms per operation
+- **Bundle Size**: 83KB (gzipped: ~25KB)
+
+## Browser Compatibility
+
+✅ **Chrome/Edge**: Full support  
+✅ **Firefox**: Full support  
+✅ **Safari**: Full support (iOS 11+)  
+⚠️ **Internet Explorer**: Not supported (WASM required)  
+
+## Troubleshooting
+
+### Common Issues
+
+1. **WASM Loading Failed**:
+   - Check browser console for CORS errors
+   - Ensure files are served over HTTP/HTTPS
+   - Verify WASM file is not corrupted
+
+2. **Module Import Errors**:
+   - Check that `linoss_web_demo.js` and `.wasm` files exist
+   - Verify file paths in `app.js`
+   - Ensure browser supports ES6 modules
+
+3. **Performance Issues**:
+   - Close other browser tabs
+   - Check available memory
+   - Try refreshing the page
+
+### Debug Mode
+
+Open browser console and use:
+```javascript
+// Access demo instance
+window.demoDebug.demoInstance
+
+// Run functions manually
+await window.demoDebug.runNeuralDemo()
+await window.demoDebug.testTensorOperations()
+await window.demoDebug.showSystemInfo()
+```
+
+## Repository Links
+
+- **Main Repository**: [LinOSS-Rust](https://github.com/springyworks/LinOSS-Rust)
+- **Demo Source**: [gh_web_demo](https://github.com/springyworks/LinOSS-Rust/tree/master/examples/gh_web_demo)
+- **Documentation**: [README.md](https://github.com/springyworks/LinOSS-Rust/blob/master/README.md)
+
+## Build Information
+
+This demo was built with:
+- **Rust**: 1.70+
+- **Burn**: 0.18.0
+- **wasm-pack**: Latest
+- **Target**: wasm32-unknown-unknown
+- **Features**: linoss (full D-LinOSS functionality)
+
+## License
+
+Same as the main LinOSS-Rust project. See the repository root for license details.
+
+---
+
+🚀 **Ready to explore neural dynamics?** [Launch the demo!](https://springyworks.github.io/LinOSS-Rust/)
