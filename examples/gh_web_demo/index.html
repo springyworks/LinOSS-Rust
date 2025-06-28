@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>D-LinOSS Real Implementation - Web Demo</title>
+    <style>
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            background: #2b2b2b;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        #linoss_canvas { 
+            display: block; 
+            width: 100%; 
+            height: 100%; 
+        }
+        
+        .loading { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            color: #ffffff; 
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        🔥 Loading Real D-LinOSS Neural Dynamics...<br>
+        <small>Using actual linoss_rust crate with egui UI</small>
+    </div>
+    <canvas id="linoss_canvas"></canvas>
+    
+    <script type="module">
+        import init, { start } from './pkg/linoss_web_demo.js';
+        
+        async function run() {
+            try {
+                await init();
+                document.getElementById('loading').style.display = 'none';
+                start();
+            } catch (error) {
+                console.error('Failed to load D-LinOSS demo:', error);
+                document.getElementById('loading').innerHTML = 
+                    '❌ Failed to load D-LinOSS demo<br><small>Check console for details</small>';
+            }
+        }
+        
+        run();
+    </script>
+</body>
+</html>

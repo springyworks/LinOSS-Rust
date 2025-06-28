@@ -1,0 +1,47 @@
+# GitHub Pages Configuration
+source: docs
+destination: _site
+url: "https://springyworks.github.io"
+baseurl: "/LinOSS-Rust"
+
+# Site settings
+title: "D-LinOSS Neural Dynamics"
+description: "Real-time neural dynamics simulation powered by Rust and WebAssembly"
+author: "SpringyWorks"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# GitHub Pages specific
+github:
+  repository_name: "LinOSS-Rust"
+  repository_url: "https://github.com/springyworks/LinOSS-Rust"
+
+# Include files
+include:
+  - "*.js"
+  - "*.wasm"
+  - "*.css"
+  - "*.ico"
+  - "*.html"
+
+# Exclude files
+exclude:
+  - "*.md"
+  - "Gemfile*"
+  - "*.lock"
+
+# Plugin settings
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
+
+# MIME type handling for WASM
+defaults:
+  - scope:
+      path: "*.wasm"
+    values:
+      layout: null
+      sitemap: false
