@@ -1,0 +1,29 @@
+# D-LinOSS Preview Image Generator
+# This is a placeholder - you would typically use a graphics tool to create the actual image
+
+# Preview image should be:
+# - 1200x630 pixels (Open Graph standard)
+# - PNG or JPG format
+# - Shows D-LinOSS branding and neural dynamics visualization
+# - Text: "D-LinOSS Neural Dynamics - Interactive Web Demo"
+# - Rust + WebAssembly logos
+# - Neural network visualization
+
+# For now, we'll create a simple text placeholder
+echo "🖼️ Preview Image Placeholder"
+echo "============================="
+echo ""
+echo "For optimal social media sharing, create a preview image:"
+echo ""
+echo "📐 Dimensions: 1200x630 pixels"
+echo "🎨 Format: PNG or JPG"
+echo "📝 Content:"
+echo "   - Title: 'D-LinOSS Neural Dynamics'"
+echo "   - Subtitle: 'Interactive Web Demo'"
+echo "   - Logo: Rust + WebAssembly"
+echo "   - Visual: Neural network diagram"
+echo "   - Colors: Blue gradient (#667eea to #764ba2)"
+echo ""
+echo "💾 Save as: docs/preview.png"
+echo ""
+echo "🔗 Update meta tags in index.html with final URL"
