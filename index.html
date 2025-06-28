@@ -3,136 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="D-LinOSS Neural Dynamics - Real-time neural dynamics simulation running in your browser with WebAssembly">
-    <meta name="keywords" content="neural networks, WASM, rust, burn, AI, machine learning, dynamics">
-    <meta name="author" content="SpringyWorks">
-    <title>D-LinOSS Neural Dynamics - Interactive Web Demo</title>
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://springyworks.github.io/LinOSS-Rust/">
-    <meta property="og:title" content="D-LinOSS Neural Dynamics - Interactive Web Demo">
-    <meta property="og:description" content="Experience real-time neural dynamics simulation powered by Rust and WebAssembly">
-    <meta property="og:image" content="https://springyworks.github.io/LinOSS-Rust/preview.png">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://springyworks.github.io/LinOSS-Rust/">
-    <meta property="twitter:title" content="D-LinOSS Neural Dynamics - Interactive Web Demo">
-    <meta property="twitter:description" content="Experience real-time neural dynamics simulation powered by Rust and WebAssembly">
-    <meta property="twitter:image" content="https://springyworks.github.io/LinOSS-Rust/preview.png">
-
+    <meta name="description" content="D-LinOSS Neural Dynamics - Real-time neural dynamics simulation">
+    <title>D-LinOSS Neural Dynamics</title>
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
-    <link rel="stylesheet" href="./style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            text-align: center;
+            color: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        #linoss_canvas {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 95vw;
+            height: 80vh;
+            max-width: 1400px;
+            max-height: 800px;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            z-index: 100;
+        }
+    </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1>🧠 D-LinOSS Neural Dynamics</h1>
-            <p class="subtitle">Real-time neural dynamics simulation powered by Rust & WebAssembly</p>
-            <div class="badges">
-                <span class="badge rust">🦀 Rust</span>
-                <span class="badge wasm">⚡ WebAssembly</span>
-                <span class="badge burn">🔥 Burn</span>
-                <span class="badge realtime">⏱️ Real-time</span>
-            </div>
+    <!-- Simple header -->
+    <header class="header">
+        <h1>🧠 D-LinOSS Neural Dynamics</h1>
+        <p>Real-time neural dynamics simulation with interactive 2D/3D visualization</p>
+    </header>
+
+    <!-- Canvas container for egui -->
+    <div class="canvas-container">
+        <div class="loading" id="loading">
+            🔄 Loading D-LinOSS Neural Dynamics...<br>
+            <small>Initializing WebAssembly and egui...</small>
         </div>
+        <canvas id="linoss_canvas"></canvas>
     </div>
 
-    <div class="container">
-        <!-- Demo Section -->
-        <div class="demo-section">
-            <h2>🎮 Interactive Demo</h2>
-            <p>Experience real D-LinOSS neural dynamics running directly in your browser. No installation required!</p>
-            
-            <div class="demo-controls">
-                <button id="startDemo" class="btn-primary">🚀 Launch Neural Dynamics Demo</button>
-                <button id="testTensors" class="btn-secondary">🧮 Test Tensor Operations</button>
-                <button id="showInfo" class="btn-secondary">ℹ️ System Info</button>
-            </div>
-
-            <div class="demo-output">
-                <div id="loading" class="loading hidden">
-                    🔄 Loading D-LinOSS Neural Dynamics...<br>
-                    <small>Initializing WebAssembly module...</small>
-                </div>
-                
-                <div id="demoResult" class="output"></div>
-                <div id="tensorResult" class="output"></div>
-                <div id="systemInfo" class="output"></div>
-            </div>
-        </div>
-
-        <!-- Features Section -->
-        <div class="features-section">
-            <h2>✨ Features</h2>
-            <div class="features-grid">
-                <div class="feature">
-                    <h3>🧠 Real Neural Dynamics</h3>
-                    <p>Authentic D-LinOSS implementation with 10→32→10 architecture</p>
-                </div>
-                <div class="feature">
-                    <h3>⚡ WebAssembly Performance</h3>
-                    <p>Near-native performance in the browser with Rust + WASM</p>
-                </div>
-                <div class="feature">
-                    <h3>🔥 Burn Framework</h3>
-                    <p>Powered by Burn tensor processing with NdArray backend</p>
-                </div>
-                <div class="feature">
-                    <h3>🌐 Zero Installation</h3>
-                    <p>Runs entirely in your browser - no downloads or setup required</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Technical Details -->
-        <div class="tech-section">
-            <h2>🔬 Technical Details</h2>
-            <div class="tech-grid">
-                <div class="tech-item">
-                    <strong>Backend:</strong> Burn NdArray with CPU processing
-                </div>
-                <div class="tech-item">
-                    <strong>Architecture:</strong> 10 inputs → 32 hidden → 10 outputs
-                </div>
-                <div class="tech-item">
-                    <strong>Tensor Shape:</strong> [1, 1, 10] (batch, sequence, features)
-                </div>
-                <div class="tech-item">
-                    <strong>WASM Size:</strong> ~83KB (optimized for web)
-                </div>
-            </div>
-        </div>
-
-        <!-- Repository Links -->
-        <div class="links-section">
-            <h2>🔗 Links</h2>
-            <div class="links-grid">
-                <a href="https://github.com/springyworks/LinOSS-Rust" class="link-card">
-                    <h3>📁 GitHub Repository</h3>
-                    <p>Explore the full LinOSS-Rust implementation</p>
-                </a>
-                <a href="https://github.com/springyworks/LinOSS-Rust/tree/master/examples/gh_web_demo" class="link-card">
-                    <h3>🌐 Web Demo Source</h3>
-                    <p>Check out the web demo implementation</p>
-                </a>
-                <a href="https://github.com/springyworks/LinOSS-Rust/blob/master/README.md" class="link-card">
-                    <h3>📖 Documentation</h3>
-                    <p>Learn more about D-LinOSS neural dynamics</p>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 SpringyWorks. D-LinOSS Neural Dynamics Web Demo.</p>
-            <p>Powered by <a href="https://www.rust-lang.org/">Rust</a>, <a href="https://webassembly.org/">WebAssembly</a>, and <a href="https://burn.dev/">Burn</a>.</p>
-        </div>
-    </footer>
-
-    <!-- WASM Module Loading -->
-    <script type="module" src="./app.js"></script>
+    <!-- Load WASM module -->
+    <script type="module">
+        import init from './linoss_web_demo.js';
+        
+        async function run() {
+            try {
+                await init();
+                document.getElementById('loading').style.display = 'none';
+                console.log('D-LinOSS WASM module loaded successfully');
+            } catch (error) {
+                console.error('Failed to load WASM module:', error);
+                document.getElementById('loading').innerHTML = '❌ Failed to load. Please refresh the page.';
+            }
+        }
+        
+        run();
+    </script>
 </body>
 </html>
