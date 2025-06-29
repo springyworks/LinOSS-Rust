@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../../from_github/burnko"
+		},
+		{
+			"path": "../../from_github/cubecl"
 		}
 	],
 	"settings": {
@@ -10,6 +16,70 @@
 			"activityBar.background": "#322E08",
 			"titleBar.activeBackground": "#46410C",
 			"titleBar.activeForeground": "#FCFAEC"
-		}
+		},
+		"runTerminalCommand.commands": [
+			{
+				"command": "tsc ${resource}",
+				"auto": true
+			},
+			{
+				"command": "cd ${fileDirname} && cargo run --bin ${fileBasenameNoExtension}",
+				"name": "Run Rust Binary",
+				"auto": true,
+				"group": "Rust"
+			},
+			{
+				"command": "cd ${workspaceFolder} && cargo run --bin ${fileBasenameNoExtension}",
+				"name": "Run Rust Binary (from workspace root)",
+				"group": "Rust"
+			},
+			{
+				"command": "cd ${fileDirname}/../.. && cargo run --bin ${fileBasenameNoExtension}",
+				"name": "Run Rust Binary (from crate root)",
+				"auto": true,
+				"group": "Rust"
+			},
+			{
+				"command": "cd ${fileDirname} && cargo run",
+				"name": "Run Rust Example",
+				"auto": true,
+				"group": "Rust"
+			},
+			{
+				"command": "cd ${workspaceFolder} && cargo run --example ${fileBasenameNoExtension}",
+				"name": "Run Rust Example File",
+				"group": "Rust"
+			},
+			{
+				"command": "cd ${fileDirname} && cargo build --bin ${fileBasenameNoExtension}",
+				"name": "Build Rust Binary",
+				"group": "Rust"
+			},
+			{
+				"command": "cd ${fileDirname} && cargo check --bin ${fileBasenameNoExtension}",
+				"name": "Check Rust Binary",
+				"auto": true,
+				"group": "Rust"
+			},
+			{
+				"command": "/home/rustuser/userbin/run-rust-file.sh ${file}",
+				"name": "Run Rust File (Smart)",
+				"auto": true,
+				"group": "Rust"
+			},
+			// Special commands for egui_native binaries
+			{
+				"command": "cd ${workspaceFolder}/examples/egui_native && cargo run --bin ${fileBasenameNoExtension}",
+				"name": "Run egui_native Binary",
+				"auto": true,
+				"group": "Rust"
+			},
+			// Command to run current file with environment logging
+			{
+				"command": "cd ${fileDirname} && RUST_LOG=debug cargo run --bin ${fileBasenameNoExtension}",
+				"name": "Run Rust Binary (with debug logging)",
+				"group": "Rust"
+			}
+		]
 	}
 }

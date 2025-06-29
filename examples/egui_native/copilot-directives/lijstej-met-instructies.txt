@@ -1,0 +1,5 @@
+copilot todo list for egui_native
+1. can the perspecctive be real not iso; who is doing the 3D gemotry calculations , a lib/crate or did we wrote the code for it ,
+2. is realy most work done on my gpu
+3. the 3D panel can not be resized , thoug seperator can be picked up, but there is no resiaig of panes
+4.

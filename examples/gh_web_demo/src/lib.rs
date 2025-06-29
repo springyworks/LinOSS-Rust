@@ -280,6 +280,7 @@ pub struct DLinossApp {
     // 3D visualization state
     rotation_x: f32,
     rotation_y: f32,
+    zoom: f32,
     trajectory_3d: VecDeque<[f32; 3]>, // Store 3D points
 }
 
@@ -317,6 +318,7 @@ impl DLinossApp {
                 max_points: 1000,
                 rotation_x: 0.3,
                 rotation_y: 0.5,
+                zoom: 2.5,  // Start more zoomed in for better initial view
                 trajectory_3d: VecDeque::new(),
             }
         }
@@ -338,6 +340,7 @@ impl DLinossApp {
                 max_points: 1000,
                 rotation_x: 0.3,
                 rotation_y: 0.5,
+                zoom: 2.5,  // Start more zoomed in for better initial view
                 trajectory_3d: VecDeque::new(),
             }
         }
@@ -357,6 +360,7 @@ impl DLinossApp {
                 max_points: 1000,
                 rotation_x: 0.3,
                 rotation_y: 0.5,
+                zoom: 2.5,  // Start more zoomed in for better initial view
                 trajectory_3d: VecDeque::new(),
             }
         }
@@ -372,9 +376,10 @@ impl DLinossApp {
         
         #[cfg(feature = "linoss")]
         {
-            // Create input signal
-            let input_x = self.frequency * self.time.cos();
-            let input_y = self.frequency * self.time.sin() * 0.7;
+            // Create input signal with frequency and damping effects
+            let damped_amplitude = (-self.damping * self.time).exp();
+            let input_x = self.frequency * self.time.cos() * damped_amplitude;
+            let input_y = self.frequency * self.time.sin() * 0.7 * damped_amplitude;
             
             // Process through D-LinOSS
             let input_data = vec![input_x, input_y];
@@ -397,8 +402,15 @@ impl DLinossApp {
                 let tensor_data = output.to_data();
                 let result = tensor_data.as_slice::<f32>().unwrap();
                 
+                // Apply coupling to the neural output and mix with input
+                let coupled_x = result[0] as f64 * self.coupling as f64 + input_x as f64 * (1.0 - self.coupling as f64);
+                let coupled_y = result[1] as f64 * self.coupling as f64 + input_y as f64 * (1.0 - self.coupling as f64);
+                
                 // Store the phase space coordinates
-                self.phase_data.push_back([result[0] as f64, result[1] as f64]);
+                self.phase_data.push_back([coupled_x, coupled_y]);
+                
+                // Also store signal data for the time series plot
+                self.signal_data.push_back([self.time as f64, coupled_x]);
                 
                 if self.phase_data.len() > self.max_points {
                     self.phase_data.pop_front();
@@ -408,10 +420,11 @@ impl DLinossApp {
         
         #[cfg(all(feature = "burn", not(feature = "linoss")))]
         {
-            // Simple oscillator simulation using Burn tensors
+            // Simple oscillator simulation using Burn tensors with proper parameter effects
+            let damped_amplitude = (-self.damping * self.time).exp();
             let input_data = vec![
-                self.frequency * self.time.cos() * (-self.damping * self.time).exp(),
-                self.frequency * self.time.sin() * (-self.damping * self.time).exp(),
+                self.frequency * self.time.cos() * damped_amplitude,
+                self.frequency * self.time.sin() * damped_amplitude,
             ];
             
             let input_tensor = Tensor::<Backend, 1>::from_data(
@@ -419,7 +432,7 @@ impl DLinossApp {
                 &self.device,
             );
             
-            // Simple transformation
+            // Apply coupling and scaling transformation
             let scaled = input_tensor * Tensor::from_data([self.coupling, self.coupling * 0.8], &self.device);
             let tensor_data = scaled.to_data();
             let result = tensor_data.as_slice::<f32>().unwrap();
@@ -430,9 +443,10 @@ impl DLinossApp {
         
         #[cfg(not(feature = "burn"))]
         {
-            // Mock oscillator
-            let x = self.frequency * self.time.cos() * (-self.damping * self.time).exp() * self.coupling;
-            let y = self.frequency * self.time.sin() * (-self.damping * self.time).exp() * self.coupling * 0.8;
+            // Mock oscillator with proper parameter effects
+            let damped_amplitude = (-self.damping * self.time).exp();
+            let x = self.frequency * self.time.cos() * damped_amplitude * self.coupling;
+            let y = self.frequency * self.time.sin() * damped_amplitude * self.coupling * 0.8;
             
             self.phase_data.push_back([x as f64, y as f64]);
             self.signal_data.push_back([self.time as f64, x as f64]);
@@ -448,8 +462,8 @@ impl DLinossApp {
         
         // After updating phase_data and signal_data, add 3D trajectory
         if let Some(&[x, y]) = self.phase_data.back() {
-            // Create a 3D trajectory using phase space + time dimension
-            let z = (self.time * 0.5).sin() * 0.5; // Add some Z variation
+            // Create a 3D trajectory using phase space + time dimension with frequency variation
+            let z = (self.time * self.frequency * 0.3).sin() * 0.5 * (-self.damping * self.time * 0.5).exp(); // Z varies with frequency and damping
             self.trajectory_3d.push_back([x as f32, y as f32, z]);
             
             if self.trajectory_3d.len() > self.max_points {
@@ -458,8 +472,8 @@ impl DLinossApp {
         }
     }
     
-    fn project_3d_to_2d(&self, point: [f32; 3], center: Pos2, scale: f32) -> Pos2 {
-        // Simple 3D to 2D projection with rotation
+    fn project_3d_to_2d(&self, point: [f32; 3], center: Pos2, scale: f32) -> (Pos2, f32) {
+        // Enhanced 3D to 2D projection with rotation, zoom, and viewing distance
         let [x, y, z] = point;
         
         // Apply rotations
@@ -476,56 +490,301 @@ impl DLinossApp {
         let x2 = x * cos_y + z1 * sin_y;
         let z2 = -x * sin_y + z1 * cos_y;
         
-        // Simple perspective projection
-        let perspective = 1.0 / (1.0 + z2 * 0.5);
+        // Calculate distance from viewer (camera is positioned at negative Z)
+        let camera_distance = 2.0; // Camera distance from origin
+        let viewer_distance = camera_distance + z2; // Distance from camera to point
         
-        Pos2::new(
-            center.x + x2 * scale * perspective,
-            center.y - y1 * scale * perspective, // Flip Y for screen coordinates
-        )
+        // Perspective projection based on viewer distance
+        let perspective = camera_distance / viewer_distance.max(0.1); // Prevent division by zero
+        let final_scale = scale * self.zoom * perspective;
+        
+        let screen_pos = Pos2::new(
+            center.x + x2 * final_scale,
+            center.y - y1 * final_scale, // Flip Y for screen coordinates
+        );
+        
+        // Return position and depth factor based on actual viewing distance
+        // Closer to viewer = larger depth factor (closer to 1.0)
+        // Farther from viewer = smaller depth factor (closer to 0.0)
+        let depth_factor = (perspective * 2.0).clamp(0.1, 2.0);
+        (screen_pos, depth_factor)
+    }
+    
+    fn draw_phase_space_panel(&mut self, ui: &mut egui::Ui, compact: bool) {
+        ui.vertical(|ui| {
+            ui.heading("Phase Space");
+            if !compact {
+                ui.separator();
+            }
+            
+            use egui_plot::{Plot, Points, PlotPoints};
+            
+            // Calculate available space for the plot - use almost all available height
+            let available_height = ui.available_height() - 5.0; // Minimal padding
+            
+            // Use all available space with guaranteed minimum height
+            let plot = Plot::new("phase_plot")
+                .view_aspect(1.0)
+                .data_aspect(1.0)
+                .auto_bounds([true, true])
+                .height(available_height.max(180.0)); // Increased minimum height
+            
+            plot.show(ui, |plot_ui| {
+                if !self.phase_data.is_empty() {
+                    // Draw trajectory
+                    let points: PlotPoints = self.phase_data.iter().cloned().collect();
+                    plot_ui.points(
+                        Points::new(points)
+                            .radius(2.0)
+                            .color(egui::Color32::from_rgb(100, 150, 250))
+                    );
+                    
+                    // Draw current position
+                    if let Some(&last_point) = self.phase_data.back() {
+                        let current: PlotPoints = vec![last_point].into();
+                        plot_ui.points(
+                            Points::new(current)
+                                .radius(8.0)
+                                .color(egui::Color32::from_rgb(255, 100, 100))
+                        );
+                    }
+                }
+            });
+        });
+    }
+    
+    fn draw_signal_panel(&mut self, ui: &mut egui::Ui, compact: bool) {
+        ui.vertical(|ui| {
+            ui.heading("Signal Over Time");
+            if !compact {
+                ui.separator();
+            }
+            
+            use egui_plot::{Plot, Line, PlotPoints};
+            
+            // Calculate available space for the plot - use almost all available height
+            let available_height = ui.available_height() - 5.0; // Minimal padding
+            
+            // Use all available space with guaranteed minimum height
+            let plot = Plot::new("signal_plot")
+                .height(available_height.max(180.0)); // Increased minimum height
+            
+            plot.show(ui, |plot_ui| {
+                if !self.signal_data.is_empty() {
+                    let points: PlotPoints = self.signal_data.iter().cloned().collect();
+                    plot_ui.line(
+                        Line::new(points)
+                            .color(egui::Color32::from_rgb(150, 255, 150))
+                            .width(2.0)
+                    );
+                }
+            });
+        });
+    }
+    
+    fn draw_3d_panel(&mut self, ui: &mut egui::Ui) {
+        ui.vertical(|ui| {
+            ui.heading("🎯 3D Neural Dynamics");
+            ui.separator();
+            
+            // Interactive area - use most available space
+            let rect = ui.available_rect_before_wrap();
+            let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
+            
+            // Handle interactions
+            if response.dragged() {
+                let delta = response.drag_delta();
+                // More sensitive controls for mobile
+                let sensitivity = if ui.available_width() < 800.0 { 0.02 } else { 0.01 };
+                self.rotation_y += delta.x * sensitivity;
+                self.rotation_x += delta.y * sensitivity;
+            }
+            
+            // Handle scroll wheel zoom
+            let scroll_delta = ui.input(|i| i.smooth_scroll_delta.y);
+            if scroll_delta != 0.0 {
+                self.zoom *= 1.0 + scroll_delta * 0.001;
+                self.zoom = self.zoom.clamp(0.1, 5.0); // Limit zoom range
+            }
+            
+            // Handle multi-touch gestures (pinch zoom) - basic implementation
+            if let Some(multi_touch) = ui.input(|i| i.multi_touch()) {
+                    if multi_touch.zoom_delta != 1.0 {
+                        self.zoom *= multi_touch.zoom_delta;
+                        self.zoom = self.zoom.clamp(0.1, 5.0);
+                    }
+                    
+                    if multi_touch.rotation_delta != 0.0 {
+                        self.rotation_y += multi_touch.rotation_delta * 0.5;
+                    }
+            }
+            
+            // Draw 3D visualization
+            self.draw_3d_axes(ui, rect);
+            
+            // Draw trajectory
+            let painter = ui.painter();
+            let center = rect.center();
+            let base_scale = rect.width().min(rect.height()) * 0.3;
+            
+            // Draw trajectory as connected lines with proper viewing-distance-aware rendering
+            if self.trajectory_3d.len() > 1 {
+                let trajectory_vec: Vec<[f32; 3]> = self.trajectory_3d.iter().cloned().collect();
+                for i in 0..trajectory_vec.len() - 1 {
+                    let (p1, depth1) = self.project_3d_to_2d(trajectory_vec[i], center, base_scale);
+                    let (p2, depth2) = self.project_3d_to_2d(trajectory_vec[i + 1], center, base_scale);
+                    
+                    // Color gradient based on time with viewing distance fade
+                    let t = i as f32 / trajectory_vec.len() as f32;
+                    let avg_depth = (depth1 + depth2) * 0.5;
+                    
+                    // Alpha based on viewing distance (closer = more opaque)
+                    let depth_alpha = (avg_depth * 180.0 + 75.0).clamp(75.0, 255.0) as u8;
+                    
+                    let color = Color32::from_rgba_premultiplied(
+                        (100.0 + 155.0 * t) as u8,
+                        100,
+                        (255.0 - 155.0 * t) as u8,
+                        depth_alpha,
+                    );
+                    
+                    // Line width varies with viewing distance (closer = thicker)
+                    let line_width = (0.8 + avg_depth * 1.5).clamp(0.5, 3.0);
+                    painter.line_segment([p1, p2], Stroke::new(line_width, color));
+                }
+                
+                // Draw current position with proper viewing-distance-based size scaling
+                if let Some(&last_point) = self.trajectory_3d.back() {
+                    let (pos, depth_factor) = self.project_3d_to_2d(last_point, center, base_scale);
+                    
+                    // Size varies based on distance from viewer, not just Z-coordinate
+                    let base_radius = 6.0;
+                    let radius = (base_radius * depth_factor).clamp(2.0, 15.0);
+                    
+                    // Brightness and color intensity based on viewing distance
+                    let brightness = (depth_factor * 200.0 + 55.0).clamp(55.0, 255.0) as u8;
+                    let ball_color = Color32::from_rgb(brightness, brightness, 0); // Yellow with depth brightness
+                    
+                    painter.circle_filled(pos, radius, ball_color);
+                    
+                    // Add a subtle outline that also scales with depth
+                    let outline_width = (1.0 + depth_factor * 0.5).clamp(0.5, 2.0);
+                    painter.circle_stroke(pos, radius, Stroke::new(outline_width, Color32::WHITE));
+                }
+            }
+            
+            // Instructions (adaptive to screen size) - positioned at bottom
+            ui.allocate_new_ui(
+                egui::UiBuilder::new().max_rect(
+                    egui::Rect::from_min_size(
+                        rect.left_bottom() + egui::Vec2::new(10.0, -40.0),
+                        egui::Vec2::new(rect.width() - 20.0, 30.0)
+                    )
+                ),
+                |ui| {
+                    ui.horizontal(|ui| {
+                        if ui.available_width() < 400.0 {
+                            ui.label("Drag: rotate | Pinch: zoom");
+                        } else {
+                            ui.label("Drag: rotate | Scroll: zoom | Touch: pinch/rotate");
+                        }
+                        
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui.small_button("Reset View").clicked() {
+                                self.zoom = 2.5;  // Reset to better default zoom
+                                self.rotation_x = 0.3;
+                                self.rotation_y = 0.0;
+                            }
+                        });
+                    });
+                }
+            );
+        });
     }
     
     fn draw_3d_axes(&self, ui: &mut egui::Ui, rect: egui::Rect) {
         let painter = ui.painter();
         let center = rect.center();
-        let scale = rect.width().min(rect.height()) * 0.3;
+        let base_scale = rect.width().min(rect.height()) * 0.3;
         
-        // Draw axes
+        // Draw axes with perspective-based thickness
         let axes = [
-            ([0.0, 0.0, 0.0], [1.0, 0.0, 0.0], Color32::RED),    // X axis
-            ([0.0, 0.0, 0.0], [0.0, 1.0, 0.0], Color32::GREEN),  // Y axis
-            ([0.0, 0.0, 0.0], [0.0, 0.0, 1.0], Color32::BLUE),   // Z axis
+            ([0.0, 0.0, 0.0], [1.2, 0.0, 0.0], Color32::RED, "X"),    // X axis (slightly longer)
+            ([0.0, 0.0, 0.0], [0.0, 1.2, 0.0], Color32::GREEN, "Y"),  // Y axis
+            ([0.0, 0.0, 0.0], [0.0, 0.0, 1.2], Color32::BLUE, "Z"),   // Z axis
         ];
         
-        for (start, end, color) in axes {
-            let p1 = self.project_3d_to_2d(start, center, scale);
-            let p2 = self.project_3d_to_2d(end, center, scale);
-            painter.line_segment([p1, p2], Stroke::new(2.0, color));
+        for (start, end, color, label) in axes {
+            let (_p1, _depth1) = self.project_3d_to_2d(start, center, base_scale);
+            let (_p2, _depth2) = self.project_3d_to_2d(end, center, base_scale);
+            
+            // Calculate line thickness based on viewing distance
+            // Sample multiple points along the axis for smooth thickness variation
+            let segments = 10;
+            for i in 0..segments {
+                let t1 = i as f32 / segments as f32;
+                let t2 = (i + 1) as f32 / segments as f32;
+                
+                // Interpolate between start and end
+                let point1 = [
+                    start[0] + t1 * (end[0] - start[0]),
+                    start[1] + t1 * (end[1] - start[1]),
+                    start[2] + t1 * (end[2] - start[2]),
+                ];
+                let point2 = [
+                    start[0] + t2 * (end[0] - start[0]),
+                    start[1] + t2 * (end[1] - start[1]),
+                    start[2] + t2 * (end[2] - start[2]),
+                ];
+                
+                let (seg_p1, seg_depth1) = self.project_3d_to_2d(point1, center, base_scale);
+                let (seg_p2, seg_depth2) = self.project_3d_to_2d(point2, center, base_scale);
+                
+                // Average depth for this segment
+                let avg_depth = (seg_depth1 + seg_depth2) * 0.5;
+                
+                // Thickness varies from 1.0 (far) to 4.0 (near) based on viewing distance
+                let thickness = (1.0 + avg_depth * 3.0).clamp(1.0, 4.0);
+                
+                // Alpha varies with depth for additional depth perception
+                let alpha = (avg_depth * 150.0 + 105.0).clamp(105.0, 255.0) as u8;
+                let depth_color = Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), alpha);
+                
+                painter.line_segment([seg_p1, seg_p2], Stroke::new(thickness, depth_color));
+            }
+            
+            // Draw axis labels with depth-based sizing (only if there's enough space)
+            if rect.width() > 200.0 {
+                let label_offset = 1.3;
+                let label_point = [
+                    end[0] + (label_offset - 1.2) * (end[0] - start[0]).signum(),
+                    end[1] + (label_offset - 1.2) * (end[1] - start[1]).signum(),
+                    end[2] + (label_offset - 1.2) * (end[2] - start[2]).signum(),
+                ];
+                let (label_pos, label_depth) = self.project_3d_to_2d(label_point, center, base_scale);
+                
+                // Font size varies with depth
+                let font_size = (10.0 + label_depth * 6.0).clamp(8.0, 16.0);
+                let label_alpha = (label_depth * 150.0 + 105.0).clamp(105.0, 255.0) as u8;
+                let label_color = Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), label_alpha);
+                
+                painter.text(
+                    label_pos,
+                    egui::Align2::CENTER_CENTER,
+                    label,
+                    egui::FontId::proportional(font_size),
+                    label_color,
+                );
+            }
         }
         
-        // Draw axis labels
-        let label_offset = 1.1;
-        painter.text(
-            self.project_3d_to_2d([label_offset, 0.0, 0.0], center, scale),
-            egui::Align2::CENTER_CENTER,
-            "X",
-            egui::FontId::default(),
-            Color32::RED,
-        );
-        painter.text(
-            self.project_3d_to_2d([0.0, label_offset, 0.0], center, scale),
-            egui::Align2::CENTER_CENTER,
-            "Y",
-            egui::FontId::default(),
-            Color32::GREEN,
-        );
-        painter.text(
-            self.project_3d_to_2d([0.0, 0.0, label_offset], center, scale),
-            egui::Align2::CENTER_CENTER,
-            "Z",
-            egui::FontId::default(),
-            Color32::BLUE,
-        );
+        // Draw origin marker with depth-based size
+        let (origin_pos, origin_depth) = self.project_3d_to_2d([0.0, 0.0, 0.0], center, base_scale);
+        let origin_radius = (2.0 + origin_depth * 3.0).clamp(1.0, 5.0);
+        let origin_alpha = (origin_depth * 100.0 + 155.0).clamp(155.0, 255.0) as u8;
+        let origin_color = Color32::from_rgba_premultiplied(255, 255, 255, origin_alpha);
+        painter.circle_filled(origin_pos, origin_radius, origin_color);
+        painter.circle_stroke(origin_pos, origin_radius, Stroke::new(1.0, Color32::BLACK));
     }
 }
 
@@ -537,8 +796,8 @@ impl eframe::App for DLinossApp {
         // Update simulation
         self.update_simulation();
         
-        // Top panel with controls
-        egui::TopBottomPanel::top("controls").show(ctx, |ui| {
+        // Top panel with controls (more compact)
+        egui::TopBottomPanel::top("controls").exact_height(50.0).show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.heading("🧠 D-LinOSS Neural Dynamics");
                 
@@ -552,148 +811,105 @@ impl eframe::App for DLinossApp {
                     self.time = 0.0;
                     self.phase_data.clear();
                     self.signal_data.clear();
+                    self.trajectory_3d.clear();
                 }
                 
                 ui.separator();
                 
-                ui.label("Frequency:");
-                ui.add(egui::Slider::new(&mut self.frequency, 0.1..=10.0).suffix(" Hz"));
+                // More compact controls
+                ui.label("Freq:");
+                ui.add(egui::Slider::new(&mut self.frequency, 0.1..=10.0));
                 
-                ui.label("Damping:");
+                ui.label("Damp:");
                 ui.add(egui::Slider::new(&mut self.damping, 0.0..=2.0));
                 
-                ui.label("Coupling:");
+                ui.label("Coup:");
                 ui.add(egui::Slider::new(&mut self.coupling, 0.0..=2.0));
             });
         });
         
-        // Main content area with THREE panels
-        egui::CentralPanel::default().show(ctx, |ui| {
+        // Status bar (compact)
+        egui::TopBottomPanel::bottom("status").exact_height(25.0).show(ctx, |ui| {
             ui.horizontal(|ui| {
-                let panel_width = ui.available_width() / 3.0;
-                
-                // Phase space plot (left)
-                ui.allocate_ui_with_layout(
-                    [panel_width, ui.available_height()].into(),
-                    egui::Layout::top_down(egui::Align::Center),
-                    |ui| {
-                        ui.heading("Phase Space");
-                        
-                        use egui_plot::{Plot, Points, PlotPoints};
-                        
-                        Plot::new("phase_plot")
-                            .view_aspect(1.0)
-                            .show(ui, |plot_ui| {
-                                if !self.phase_data.is_empty() {
-                                    let points: PlotPoints = self.phase_data.iter().cloned().collect();
-                                    plot_ui.points(Points::new(points).radius(2.0).color(egui::Color32::LIGHT_BLUE));
-                                    
-                                    // Current position as larger point
-                                    if let Some(&last_point) = self.phase_data.back() {
-                                        let current: PlotPoints = vec![last_point].into();
-                                        plot_ui.points(Points::new(current).radius(8.0).color(egui::Color32::RED));
-                                    }
-                                }
-                            });
-                    },
-                );
-                
+                ui.label(format!("Time: {:.1}s", self.time));
                 ui.separator();
-                
-                // Signal over time (middle)
-                ui.allocate_ui_with_layout(
-                    [panel_width, ui.available_height()].into(),
-                    egui::Layout::top_down(egui::Align::Center),
-                    |ui| {
-                        ui.heading("Signal Over Time");
-                        
-                        use egui_plot::{Plot, Line, PlotPoints};
-                        
-                        Plot::new("signal_plot")
-                            .show(ui, |plot_ui| {
-                                if !self.signal_data.is_empty() {
-                                    let points: PlotPoints = self.signal_data.iter().cloned().collect();
-                                    plot_ui.line(Line::new(points).color(egui::Color32::GREEN));
-                                }
-                            });
-                    },
-                );
-                
-                ui.separator();
-                
-                // 3D Trajectory (right)
-                ui.allocate_ui_with_layout(
-                    [panel_width, ui.available_height()].into(),
-                    egui::Layout::top_down(egui::Align::Center),
-                    |ui| {
-                        ui.heading("3D Phase Trajectory");
-                        
-                        // Interactive rotation
-                        let rect = ui.available_rect_before_wrap();
-                        let response = ui.allocate_rect(rect, egui::Sense::drag());
-                        
-                        if response.dragged() {
-                            let delta = response.drag_delta();
-                            self.rotation_y += delta.x * 0.01;
-                            self.rotation_x += delta.y * 0.01;
-                        }
-                        
-                        // Draw 3D visualization
-                        self.draw_3d_axes(ui, rect);
-                        
-                        // Draw trajectory
-                        let painter = ui.painter();
-                        let center = rect.center();
-                        let scale = rect.width().min(rect.height()) * 0.3;
-                        
-                        // Draw trajectory as connected lines
-                        if self.trajectory_3d.len() > 1 {
-                            let trajectory_vec: Vec<[f32; 3]> = self.trajectory_3d.iter().cloned().collect();
-                            for i in 0..trajectory_vec.len() - 1 {
-                                let p1 = self.project_3d_to_2d(trajectory_vec[i], center, scale);
-                                let p2 = self.project_3d_to_2d(trajectory_vec[i + 1], center, scale);
-                                
-                                // Color gradient based on time
-                                let t = i as f32 / trajectory_vec.len() as f32;
-                                let color = Color32::from_rgb(
-                                    (100.0 + 155.0 * t) as u8,
-                                    100,
-                                    (255.0 - 155.0 * t) as u8,
-                                );
-                                
-                                painter.line_segment([p1, p2], Stroke::new(2.0, color));
-                            }
-                            
-                            // Draw current position
-                            if let Some(&last_point) = self.trajectory_3d.back() {
-                                let pos = self.project_3d_to_2d(last_point, center, scale);
-                                painter.circle_filled(pos, 5.0, Color32::YELLOW);
-                            }
-                        }
-                        
-                        // Instructions
-                        ui.label("Drag to rotate");
-                    },
-                );
-            });
-        });
-        
-        // Status bar
-        egui::TopBottomPanel::bottom("status").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.label(format!("Time: {:.2}s", self.time));
-                ui.separator();
-                ui.label(format!("Points: {}", self.phase_data.len()));
+                ui.label(format!("Pts: {}", self.phase_data.len()));
                 ui.separator();
                 
                 #[cfg(feature = "linoss")]
-                ui.label("💚 Real D-LinOSS Layer");
+                ui.label("💚 D-LinOSS");
                 
                 #[cfg(all(feature = "burn", not(feature = "linoss")))]
-                ui.label("🔧 Burn Tensor Demo");
+                ui.label("🔧 Burn");
                 
                 #[cfg(not(feature = "burn"))]
-                ui.label("📝 Mock Demo");
+                ui.label("📝 Mock");
+                
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(format!("Zoom: {:.1}x", self.zoom));
+                });
+            });
+        });
+        
+        // Main content area - 3D on top, 2D graphs side by side below
+        egui::CentralPanel::default().show(ctx, |ui| {
+            // Calculate heights based on screen size with proper proportions
+            let available_height = ui.available_height();
+            let is_mobile = ctx.screen_rect().width() < 800.0;
+            
+            // Reduce 3D space to give more room to bottom panels
+            let main_height = if is_mobile { 
+                available_height * 0.45  // 45% for 3D on mobile
+            } else { 
+                available_height * 0.48  // 48% for 3D on desktop
+            };
+            let helper_height = available_height - main_height - 15.0; // Account for spacing
+            
+            // 3D panel at the top
+            ui.allocate_ui_with_layout(
+                egui::vec2(ui.available_width(), main_height),
+                egui::Layout::top_down(egui::Align::Center),
+                |ui| {
+                    ui.group(|ui| {
+                        self.draw_3d_panel(ui);
+                    });
+                }
+            );
+            
+            ui.add_space(3.0); // Minimal spacing
+            ui.separator();
+            ui.add_space(3.0);
+            
+            // Bottom section: Phase Space and Signal side by side with guaranteed space
+            ui.horizontal(|ui| {
+                let available_width = ui.available_width();
+                let panel_width = (available_width - 15.0) / 2.0; // Account for spacing
+                
+                // Phase space on the left
+                ui.allocate_ui_with_layout(
+                    egui::vec2(panel_width, helper_height),
+                    egui::Layout::top_down(egui::Align::LEFT),
+                    |ui| {
+                        ui.group(|ui| {
+                            ui.set_min_height(helper_height - 10.0); // Ensure adequate height
+                            self.draw_phase_space_panel(ui, is_mobile);
+                        });
+                    }
+                );
+                
+                ui.add_space(5.0); // Space between panels
+                
+                // Signal on the right
+                ui.allocate_ui_with_layout(
+                    egui::vec2(panel_width, helper_height),
+                    egui::Layout::top_down(egui::Align::LEFT),
+                    |ui| {
+                        ui.group(|ui| {
+                            ui.set_min_height(helper_height - 10.0); // Ensure adequate height
+                            self.draw_signal_panel(ui, is_mobile);
+                        });
+                    }
+                );
             });
         });
     }

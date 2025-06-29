@@ -1,30 +1,26 @@
 # Rust build artifacts
-/target/
+/target
 **/target/
 
 # Lock files (keep in VCS for libraries, exclude for applications)
 # Cargo.lock
 
 # WASM build artifacts (but keep essential demo files)
-**/target/**/pkg/
+**/pkg/
 **/snippets/
 
-# ALL target directories (comprehensive exclusion)
-target/
-**/target/
-examples/*/target/
+# Build artifacts in target directories
 ghwebdemo/target/
 examples/web_demo/target/
-examples/egui_native/target/
+# Note: ghwebdemo/wasm/ contains essential files for GitHub Pages demo
 demo/target/
+demo/wasm/
+demo/pkg/
 
-# Rust binaries and debug info
-**/debug/
-**/release/
-**/*.rlib
-**/*.rmeta
-**/*.exe
-**/*.pdb
+# Examples build artifacts
+examples/egui_native/target/
+examples/web_demo/target/
+examples/*/target/
 
 # Logs and temporary files
 *.log
@@ -52,39 +48,12 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Large binary files and executables
+# Large binary files
 *.bin
 *.exe
 *.dll
 *.so
 *.dylib
-
-# Rust-specific binary artifacts
-**/target/
-**/debug/
-**/release/
-**/*.rlib
-**/*.rmeta
-**/*.d
-**/deps/
-**/.fingerprint/
-**/build/
-**/incremental/
-
-# WASM artifacts (exclude target-generated, keep essential demo files)
-**/target/**/*.wasm
-!ghwebdemo/wasm/*.wasm
-!ghwebdemo/wasm/*.js
-!examples/web_demo/pkg/*.wasm
-!examples/web_demo/pkg/*.js
-
-# Model files and training data (often large)
-*.model
-*.checkpoint
-*.ckpt
-*.safetensors
-*.pt
-*.pth
 
 # Test artifacts
 test_output/

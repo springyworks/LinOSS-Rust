@@ -21,11 +21,8 @@ use std::sync::Arc;
 use std::collections::VecDeque;
 use anyhow::Result;
 
-// LinOSS imports from parent crate
-use linoss_rust::Vector;
-use linoss_rust::linoss::DLinossLayer;
+// Mathematical utilities - standalone implementation
 use nalgebra::DVector;
-use burn::backend::NdArray;
 
 // Image and animation support
 use image::codecs::gif::GifDecoder;

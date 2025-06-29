@@ -53,11 +53,11 @@ pub struct LinossNeuralState {
     pub damping_strength: f64,
     
     // WGPU device reference for potential GPU memory sharing
-    pub device: Option<Arc<wgpu::Device>>,
+    pub device: Option<Arc<eframe::wgpu::Device>>,
 }
 
 impl LinossNeuralState {
-    pub fn new(oscillator_count: usize, device: Option<Arc<wgpu::Device>>) -> Self {
+    pub fn new(oscillator_count: usize, device: Option<Arc<eframe::wgpu::Device>>) -> Self {
         let d_input = 3;           // 3D input (x, y, z coordinates)
         let d_model = oscillator_count.max(8); // Hidden dimension 
         let d_output = oscillator_count; // Output for each oscillator
@@ -227,10 +227,10 @@ impl PlotData {
 
 // WGPU-based 3D renderer for neural oscillators
 struct WgpuNeuralRenderer {
-    render_pipeline: wgpu::RenderPipeline,
-    vertex_buffer: wgpu::Buffer,
-    uniform_buffer: wgpu::Buffer,
-    bind_group: wgpu::BindGroup,
+    render_pipeline: eframe::wgpu::RenderPipeline,
+    vertex_buffer: eframe::wgpu::Buffer,
+    uniform_buffer: eframe::wgpu::Buffer,
+    bind_group: eframe::wgpu::BindGroup,
     instance_count: u32,
 }
 
@@ -249,33 +249,33 @@ struct Uniforms {
 
 impl WgpuNeuralRenderer {
     fn new(
-        device: &wgpu::Device,
-        format: wgpu::TextureFormat,
+        device: &eframe::wgpu::Device,
+        format: eframe::wgpu::TextureFormat,
         oscillator_count: u32,
     ) -> Self {
         // WGPU shader for LinOSS neural visualization
-        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        let shader = device.create_shader_module(eframe::wgpu::ShaderModuleDescriptor {
             label: Some("LinOSS Neural Shader"),
-            source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!("wgpu_neural_shader.wgsl"))),
+            source: eframe::wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!("wgpu_neural_shader.wgsl"))),
         });
         
         // Uniforms for neural parameters
-        let uniform_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+        let uniform_buffer = device.create_buffer(&eframe::wgpu::BufferDescriptor {
             label: Some("Neural Uniform Buffer"),
             size: std::mem::size_of::<Uniforms>() as u64,
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            usage: eframe::wgpu::BufferUsages::UNIFORM | eframe::wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
         
         // Bind group layout
-        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let bind_group_layout = device.create_bind_group_layout(&eframe::wgpu::BindGroupLayoutDescriptor {
             label: Some("Neural Bind Group Layout"),
             entries: &[
-                wgpu::BindGroupLayoutEntry {
+                eframe::wgpu::BindGroupLayoutEntry {
                     binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Uniform,
+                    visibility: eframe::wgpu::ShaderStages::VERTEX_FRAGMENT,
+                    ty: eframe::wgpu::BindingType::Buffer {
+                        ty: eframe::wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: false,
                         min_binding_size: None,
                     },
@@ -284,11 +284,11 @@ impl WgpuNeuralRenderer {
             ],
         });
         
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        let bind_group = device.create_bind_group(&eframe::wgpu::BindGroupDescriptor {
             label: Some("Neural Bind Group"),
             layout: &bind_group_layout,
             entries: &[
-                wgpu::BindGroupEntry {
+                eframe::wgpu::BindGroupEntry {
                     binding: 0,
                     resource: uniform_buffer.as_entire_binding(),
                 },
@@ -296,57 +296,58 @@ impl WgpuNeuralRenderer {
         });
         
         // Pipeline layout
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        let pipeline_layout = device.create_pipeline_layout(&eframe::wgpu::PipelineLayoutDescriptor {
             label: Some("Neural Pipeline Layout"),
             bind_group_layouts: &[&bind_group_layout],
             push_constant_ranges: &[],
         });
         
         // Render pipeline
-        let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        let render_pipeline = device.create_render_pipeline(&eframe::wgpu::RenderPipelineDescriptor {
             label: Some("Neural Render Pipeline"),
             layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
+            vertex: eframe::wgpu::VertexState {
                 module: &shader,
-                entry_point: "vs_main",
+                entry_point: Some("vs_main"),
                 buffers: &[],
                 compilation_options: Default::default(),
             },
-            fragment: Some(wgpu::FragmentState {
+            fragment: Some(eframe::wgpu::FragmentState {
                 module: &shader,
-                entry_point: "fs_main",
-                targets: &[Some(wgpu::ColorTargetState {
+                entry_point: Some("fs_main"),
+                targets: &[Some(eframe::wgpu::ColorTargetState {
                     format,
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::ALL,
+                    blend: Some(eframe::wgpu::BlendState::ALPHA_BLENDING),
+                    write_mask: eframe::wgpu::ColorWrites::ALL,
                 })],
                 compilation_options: Default::default(),
             }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::PointList,
+            primitive: eframe::wgpu::PrimitiveState {
+                topology: eframe::wgpu::PrimitiveTopology::PointList,
                 strip_index_format: None,
-                front_face: wgpu::FrontFace::Ccw,
+                front_face: eframe::wgpu::FrontFace::Ccw,
                 cull_mode: None,
                 unclipped_depth: false,
-                polygon_mode: wgpu::PolygonMode::Fill,
+                polygon_mode: eframe::wgpu::PolygonMode::Fill,
                 conservative: false,
             },
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: wgpu::TextureFormat::Depth32Float,
+            depth_stencil: Some(eframe::wgpu::DepthStencilState {
+                format: eframe::wgpu::TextureFormat::Depth32Float,
                 depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::Less,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
+                depth_compare: eframe::wgpu::CompareFunction::Less,
+                stencil: eframe::wgpu::StencilState::default(),
+                bias: eframe::wgpu::DepthBiasState::default(),
             }),
-            multisample: wgpu::MultisampleState::default(),
+            multisample: eframe::wgpu::MultisampleState::default(),
             multiview: None,
+            cache: None,
         });
         
         // Dummy vertex buffer (positions generated in shader)
-        let vertex_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+        let vertex_buffer = device.create_buffer(&eframe::wgpu::BufferDescriptor {
             label: Some("Neural Vertex Buffer"),
             size: 0,
-            usage: wgpu::BufferUsages::VERTEX,
+            usage: eframe::wgpu::BufferUsages::VERTEX,
             mapped_at_creation: false,
         });
         

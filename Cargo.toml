@@ -1,8 +1,18 @@
+[workspace]
+members = [
+    ".",
+    "examples/egui_native"
+]
+
 [package]
 name = "linoss_rust"
 version = "0.2.0"
-edition = "2021"
+edition = "2024"
 default-run = "linoss_rust"
+
+# Enable unstable features for CubeCL compatibility
+[lints.rust]
+build_hasher_default_const_new = "allow"
 
 [[bin]]
 name = "linoss_rust"
@@ -17,9 +27,10 @@ name = "train_linoss"
 path = "examples/train_linoss.rs"
 
 [dependencies]
-# Burn ML framework with conditional features
-burn = { path = "/home/rustuser/projects/from_github/burn/crates/burn", features = [
+# Burn ML framework with conditional features - ENABLE WGPU FOR TRUE GPU PIPELINE
+burn = { path = "/home/rustuser/projects/from_github/burnko/crates/burn", features = [
     "ndarray",
+    "wgpu",     # ⚡ WGPU BACKEND - DO NOT REMOVE!
     "autodiff",
     "std",
     "dataset"
@@ -100,3 +111,11 @@ opt-level = 2        # Good optimization, faster than level 3
 lto = "thin"         # Faster LTO
 codegen-units = 4    # Parallel compilation
 debug = false
+
+# Patch CubeCL to use a local version with unstable feature enabled
+[patch."https://github.com/tracel-ai/cubecl"]
+cubecl = { path = "/home/rustuser/projects/from_github/cubecl/crates/cubecl" }
+cubecl-runtime = { path = "/home/rustuser/projects/from_github/cubecl/crates/cubecl-runtime" }
+cubecl-common = { path = "/home/rustuser/projects/from_github/cubecl/crates/cubecl-common" }
+cubecl-wgpu = { path = "/home/rustuser/projects/from_github/cubecl/crates/cubecl-wgpu" }
+cubecl-matmul = { path = "/home/rustuser/projects/from_github/cubecl/crates/cubecl-matmul" }
