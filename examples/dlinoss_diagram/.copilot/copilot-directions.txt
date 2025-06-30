@@ -1,0 +1,7 @@
+copilot-lawread instructions
+
+DO NOT
+1. cargo run --release; it takes much longer to compile and link 
+2. use the cd command in every other cli command , especialy like this one ; cd <fullpath> && gargo ............ . This very like a sub-cargo proble , with its own bins etc.
+3. do not dump all the "Here's what I've implemented for you: ...." , most of the time the result is not satisfactory
+

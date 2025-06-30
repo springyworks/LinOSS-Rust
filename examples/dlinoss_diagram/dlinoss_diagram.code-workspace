@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../maxGraphRust"
+		}
+	],
+	"settings": {
+		"workbench.colorCustomizations": {
+			"editor.background": "#010101",
+			"activityBar.background": "#0C3329",
+			"titleBar.activeBackground": "#114839",
+			"titleBar.activeForeground": "#F2FCF9"
+		},
+		"cSpell.words": [
+			"Linoss"
+		]
+	}
+}
