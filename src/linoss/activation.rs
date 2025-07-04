@@ -1,3 +1,36 @@
+use burn::{
+    module::Module,
+    nn::{Linear, LinearConfig},
+    tensor::{backend::Backend, Tensor, activation},
+};
+
+/// Gated Linear Unit (GLU) implementation for Burn
+#[derive(Module, Debug)]
+pub struct GLU<B: Backend> {
+    /// First linear projection (for gate)
+    pub w1: Linear<B>,
+    /// Second linear projection (for value)
+    pub w2: Linear<B>,
+}
+
+impl<B: Backend> GLU<B> {
+    /// Create a new GLU layer
+    pub fn new(input_dim: usize, output_dim: usize, device: &B::Device) -> Self {
+        let w1 = LinearConfig::new(input_dim, output_dim).init(device);
+        let w2 = LinearConfig::new(input_dim, output_dim).init(device);
+        
+        Self { w1, w2 }
+    }
+    
+    /// Forward pass: GLU(x) = sigmoid(W1 * x) ⊙ (W2 * x)
+    pub fn forward(&self, input: Tensor<B, 2>) -> Tensor<B, 2> {
+        let gate = activation::sigmoid(self.w1.forward(input.clone()));
+        let value = self.w2.forward(input);
+        gate * value
+    }
+}
+
+// Legacy GLU functions for compatibility
 use crate::{Vector, Matrix, LinossError}; // Ensure this is the only `use` for these types here
 
 // GELU (Gaussian Error Linear Unit) approximation

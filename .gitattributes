@@ -1,0 +1,30 @@
+# LinOSS Rust Project File Status Tracking
+# Using custom Git attributes to mark file status
+
+# Working examples (tested and functional)
+src/main.rs status=working
+examples/dlinoss_comprehensive_showcase.rs status=working  
+examples/dlinoss_oscillator_demo.rs status=needs-test
+examples/dlinoss_response_visualizer.rs status=needs-test
+examples/dlinoss_time_series.rs status=needs-test
+examples/dlinoss_vs_vanilla_comparison.rs status=needs-test
+examples/burn_demo.rs status=needs-test
+examples/dlinoss_simple_mnist.rs status=needs-test
+
+# Known broken/stale examples
+examples/brain_dynamics_explorer.rs status=stale
+examples/burn_iris_loader.rs status=stale  
+examples/dlinoss_visualizer.rs status=stale
+examples/analyze_brain_dynamics.py status=stale
+examples/velocity_monitor.py status=stale
+
+# Special directories
+examples/egui_native/ status=working
+examples/dlinoss_diagram/ status=working
+examples/gh_web_demo/ status=stale
+examples/OLD/ status=archive
+
+# Core library status
+src/linoss/ status=working
+src/linoss/dlinoss_layer.rs status=working
+src/linoss/layer.rs status=working

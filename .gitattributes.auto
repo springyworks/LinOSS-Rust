@@ -1,0 +1,22 @@
+# Auto-updated by status checker Fri Jul  4 01:33:57 PM CEST 2025
+# Working examples (compile successfully)
+examples/dlinoss_response_visualizer.rs status=working-compile
+examples/burn_demo.rs status=working-compile
+# Broken examples (compilation fails)
+examples/dlinoss_comprehensive_showcase.rs status=broken-compile
+examples/dlinoss_oscillator_demo.rs status=broken-compile
+examples/dlinoss_time_series.rs status=broken-compile
+examples/dlinoss_vs_vanilla_comparison.rs status=broken-compile
+examples/dlinoss_simple_mnist.rs status=broken-compile
+# Missing examples
+# Auto-updated by status checker Fri Jul  4 01:37:00 PM CEST 2025
+# Working examples (compile successfully)
+examples/dlinoss_response_visualizer.rs status=working-compile
+examples/burn_demo.rs status=working-compile
+# Broken examples (compilation fails)
+# Missing examples
+examples/dlinoss_comprehensive_showcase.rs status=missing
+examples/dlinoss_oscillator_demo.rs status=missing
+examples/dlinoss_time_series.rs status=missing
+examples/dlinoss_vs_vanilla_comparison.rs status=missing
+examples/dlinoss_simple_mnist.rs status=missing

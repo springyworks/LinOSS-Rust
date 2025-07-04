@@ -1,0 +1,8 @@
+
+MISSING: dlinoss_comprehensive_showcase
+MISSING: dlinoss_oscillator_demo
+COMPILES: dlinoss_response_visualizer
+MISSING: dlinoss_time_series
+MISSING: dlinoss_vs_vanilla_comparison
+COMPILES: burn_demo
+MISSING: dlinoss_simple_mnist

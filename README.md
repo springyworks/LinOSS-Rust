@@ -1,41 +1,82 @@
 # LinOSS Rust Implementation (Burn Framework)
 
+## 🎯 **Quick Reference** - Project Management Commands
+
+Never forget these essential commands for project status tracking:
+
+```bash
+# 📊 Daily status check (MOST IMPORTANT)
+./scripts/check_project_status.sh
+
+# 🔍 Check specific file status  
+git check-attr status src/main.rs
+git check-attr status examples/some_example.rs
+
+# 📋 Find all working files
+git ls-files | xargs git check-attr status | grep 'working'
+
+# ⚠️ Find files needing attention
+git ls-files | xargs git check-attr status | grep -E 'broken|needs-test'
+
+# 🎛️ View all management tools
+./scripts/git_status_manager.sh
+
+# 🗃️ Archive broken code
+mv examples/broken.rs examples/OLD/
+
+# ✅ Mark file as working
+echo 'examples/fixed.rs status=working' >> .gitattributes
+```
+
+**💡 REMEMBER**: Always run `./scripts/check_project_status.sh` before commits!
+
+---
+
 <details>
-<summary><b>Table of Contents</b> (click to expand) | Sections: 1. Project Overview | 2. Install & Run | 3. Abstract Summary | 4. Core Concepts | 5. Rust & Burn | 6. Structure | 7. Usage | 8. Status</summary>
+<summary><b>Table of Contents</b> (click to expand) | Sections: 1. Project Overview | 2. Project Management | 3. Install & Run | 4. Abstract | 5. Core Concepts | 6. Rust & Burn | 7. Structure | 8. Usage | 9. Status</summary>
 
 - [LinOSS Rust Implementation (Burn Framework)](#linoss-rust-implementation-burn-framework)
+  - [🎯 **Quick Reference** - Project Management Commands](#-quick-reference---project-management-commands)
   - [1. Project Overview](#1-project-overview)
-  - [2. Install & Run](#2-install--run)
-    - [2.1. Prerequisites](#21-prerequisites)
-    - [2.2. Cloning](#22-cloning)
-    - [2.3. Building](#23-building)
-    - [2.4. Running Tests](#24-running-tests)
-    - [2.5. Running Examples](#25-running-examples)
-    - [2.6. Backend Selection](#26-backend-selection)
-    - [2.7. Enabling Log Output (Optional)](#27-enabling-log-output-optional)
-  - [3. Abstract Summary](#3-abstract-summary)
-  - [4. Core Concepts for Implementation](#4-core-concepts-for-implementation)
-    - [4.a. State-Space Model (SSM) Fundamentals](#4a-state-space-model-ssm-fundamentals)
-    - [4.b. Forced Harmonic Oscillators](#4b-forced-harmonic-oscillators)
-    - [4.c. Discretization Methods](#4c-discretization-methods)
-      - [4.c.i. LinOSS-IM (Implicit Time Integration)](#4ci-linoss-im-implicit-time-integration)
-      - [4.c.ii. LinOSS-IMEX (Implicit-Explicit Time Integration)](#4cii-linoss-imex-implicit-explicit-time-integration)
-    - [4.d. Fast Recurrence via Associative Parallel Scans](#4d-fast-recurrence-via-associative-parallel-scans)
-  - [5. Rust and Burn Crate Considerations](#5-rust-and-burn-crate-considerations)
-    - [5.a. Mapping to Burn Tensors](#5a-mapping-to-burn-tensors)
-    - [5.b. Burn Modules](#5b-burn-modules)
-    - [5.c. Efficient Computations](#5c-efficient-computations)
-    - [5.d. Parameterization and Initialization](#5d-parameterization-and-initialization)
-  - [6. Project Structure](#6-project-structure)
+  - [2. 🎯 Project Management \& Status Tracking](#2--project-management--status-tracking)
+    - [2.1. Quick Status Check](#21-quick-status-check)
+    - [2.2. File Status Categories](#22-file-status-categories)
+    - [2.3. Daily Workflow Commands](#23-daily-workflow-commands)
+    - [2.4. Project Status Overview](#24-project-status-overview)
+  - [3. Install \& Run](#3-install--run)
+    - [3.1. Prerequisites](#31-prerequisites)
+    - [3.2. Cloning](#32-cloning)
+    - [3.3. Building](#33-building)
+    - [3.4. Running Tests](#34-running-tests)
+    - [3.5. Running Examples](#35-running-examples)
+    - [3.6. Backend Selection](#36-backend-selection)
+    - [3.7. Enabling Log Output (Optional)](#37-enabling-log-output-optional)
+  - [4. Abstract Summary](#4-abstract-summary)
+  - [5. Core Concepts for Implementation](#5-core-concepts-for-implementation)
+    - [5.a. State-Space Model (SSM) Fundamentals](#5a-state-space-model-ssm-fundamentals)
+    - [5.b. Forced Harmonic Oscillators](#5b-forced-harmonic-oscillators)
+    - [5.c. Discretization Methods](#5c-discretization-methods)
+      - [5.c.i. LinOSS-IM (Implicit Time Integration)](#5ci-linoss-im-implicit-time-integration)
+      - [5.c.ii. LinOSS-IMEX (Implicit-Explicit Time Integration)](#5cii-linoss-imex-implicit-explicit-time-integration)
+    - [5.d. Fast Recurrence via Associative Parallel Scans](#5d-fast-recurrence-via-associative-parallel-scans)
+  - [6. Rust and Burn Crate Considerations](#6-rust-and-burn-crate-considerations)
+    - [6.a. Mapping to Burn Tensors](#6a-mapping-to-burn-tensors)
+    - [6.b. Burn Modules](#6b-burn-modules)
+    - [6.c. Efficient Computations](#6c-efficient-computations)
+    - [6.d. Parameterization and Initialization](#6d-parameterization-and-initialization)
+  - [7. Project Structure](#7-project-structure)
   - [7. Usage](#7-usage)
     - [7.1. Building the Project](#71-building-the-project)
     - [7.2. Running Tests](#72-running-tests)
     - [7.3. Running Examples](#73-running-examples)
     - [7.4. Backend Selection](#74-backend-selection)
   - [8. Development Status (Current Version)](#8-development-status-current-version)
-    - [8.a. Implemented Features](#8a-implemented-features)
+    - [8.a. Implemented Features ✅ **ALL WORKING**](#8a-implemented-features--all-working)
     - [8.b. Key Characteristics](#8b-key-characteristics)
-    - [8.c. Future Enhancements](#8c-future-enhancements)
+    - [8.c. Recent Fixes (June 2025)](#8c-recent-fixes-june-2025)
+    - [8.d. Future Enhancements](#8d-future-enhancements)
+  - [🌊 Featured: NeuroBreeze - Brain Dynamics Visualization](#-featured-neurobreeze---brain-dynamics-visualization)
+    - [Key Features:](#key-features)
 
 </details>
 
@@ -46,20 +87,78 @@ This project is a Rust implementation of Linear Oscillatory State-Space Models (
 
 The primary goal is to provide a flexible and efficient Rust library for LinOSS models, suitable for research and application, leveraging Burn's backend-agnostic tensor operations for CPU and GPU execution.
 
-## 2. Install & Run
+## 2. 🎯 Project Management & Status Tracking
 
-### 2.1. Prerequisites
+**NEW FEATURE**: Comprehensive Git-based project management system for tracking file status and maintaining code quality.
+
+### 2.1. Quick Status Check
+```bash
+# Check all examples and get status report
+./scripts/check_project_status.sh
+
+# View comprehensive Git management tools
+./scripts/git_status_manager.sh
+
+# Check specific file status
+git check-attr status src/main.rs
+git check-attr status examples/some_example.rs
+```
+
+### 2.2. File Status Categories
+- ✅ **`status=working`** - Tested, compiles, and runs correctly
+- ❌ **`status=broken`** - Compilation or runtime failures  
+- 🔍 **`status=needs-test`** - Untested, needs verification
+- 📦 **`status=stale`** - Outdated, consider archiving
+
+### 2.3. Daily Workflow Commands
+```bash
+# Morning status check
+./scripts/check_project_status.sh
+
+# Find all working files
+git ls-files | xargs git check-attr status | grep 'working'
+
+# Find files needing attention
+git ls-files | xargs git check-attr status | grep -E 'broken|needs-test'
+
+# Archive broken examples
+mv examples/broken_example.rs examples/OLD/
+git add examples/OLD/broken_example.rs
+git commit -m 'archive(examples): move broken example [BROKEN]'
+
+# Mark file as working after fixing
+echo 'examples/fixed_example.rs status=working' >> .gitattributes
+git add .gitattributes
+git commit -m 'status: mark example as working [WORKING]'
+```
+
+### 2.4. Project Status Overview
+Current status (as of 2025-07-04):
+- ✅ **5 Working items**: `src/main.rs` (Enhanced Lissajous visualizer), 2 examples, 2 sub-projects
+- 🗃️ **Archived**: 11 broken examples moved to `examples/OLD/`
+- 📁 **Focus**: Main interactive D-LinOSS Lissajous visualizer
+
+**💡 Pro Tip**: Run `./scripts/check_project_status.sh` before making commits to ensure code quality!
+
+---
+
+## 3. Install & Run
+
+### 3.1. Prerequisites
 - Rust programming language (latest stable version recommended). Install from [rustup.rs](https://rustup.rs/).
 - Cargo (Rust's package manager, installed with Rust).
 - For WGPU backend (GPU support): Ensure your system has compatible graphics drivers and Vulkan/Metal/DX12 support as required by WGPU.
 
-### 2.2. Cloning
+### 3.2. Cloning
 ```bash
 git clone <repository-url> # Replace <repository-url> with the actual URL
 cd LinossRust
+
+# 🎯 FIRST THING: Check project status
+./scripts/check_project_status.sh
 ```
 
-### 2.3. Building
+### 3.3. Building
 To build with the default backend (NdArray - CPU):
 ```bash
 cargo build --release
@@ -70,18 +169,39 @@ cargo build --release --features wgpu_backend
 ```
 Remove `--release` for a debug build.
 
-### 2.4. Running Tests
+### 3.4. Running Tests
 With default backend (NdArray):
 ```bash
 cargo test
+
+# 🎯 Check which tests are working
+git check-attr status tests/*
 ```
 With WGPU backend:
 ```bash
 cargo test --features wgpu_backend
 ```
 
-### 2.5. Running Examples
+### 3.5. Running Examples
 Examples are located in the `examples/` directory.
+
+**🎯 PRIMARY EXAMPLE**: Enhanced D-LinOSS Lissajous Visualizer
+```bash
+# Main interactive application (✅ WORKING)
+cargo run --bin linoss_rust
+# Features: Trail fading, damping controls, 8 pulse types
+```
+
+**✅ VERIFIED WORKING EXAMPLES**:
+```bash
+# Check which examples are working
+git ls-files examples/ | xargs git check-attr status | grep 'working'
+
+# Run working examples
+cargo run --example dlinoss_response_visualizer  # ✅ WORKING
+cargo run --example burn_demo                    # ✅ WORKING
+```
+
 To run an example (e.g., `basic_usage.rs`) with the default backend:
 ```bash
 cargo run --example basic_usage
@@ -96,20 +216,19 @@ cargo run --release --example basic_usage --features wgpu_backend
 ```
 
 Available examples include:
-- `basic_usage.rs`: Demonstrates basic model initialization and a forward pass.
-- `sine_wave_visualization.rs`: Simulates the model on a sine wave input and prints output (non-TUI).
-- `chaotic_2d_linoss.rs`: A TUI example visualizing a 2D chaotic system driven by LinOSS.
-- `compare_scan_methods.rs`: Compares performance of different parallel scan algorithms.
-- `benchmark_scan_methods.rs` (binary): Benchmarks scan methods (run via `cargo run --bin benchmark_scan_methods`).
+- ✅ `dlinoss_response_visualizer.rs`: Interactive D-LinOSS response visualization
+- ✅ `burn_demo.rs`: Basic Burn framework demonstration
+- 🗃️ **Archived examples**: See `examples/OLD/` for 11 archived examples
+- 📊 **Status check**: Run `./scripts/check_project_status.sh` to verify current status
 
-### 2.6. Backend Selection
+### 3.6. Backend Selection
 The project supports multiple backends via Cargo features:
 - `ndarray_backend` (default if no other backend feature is specified and it's listed as a default feature in `Cargo.toml`): Uses NdArray for CPU-based computation.
 - `wgpu_backend`: Uses WGPU for GPU-accelerated computation.
 
 Select the backend when building, running tests, or running examples using the `--features` flag. If both features are enabled, `wgpu_backend` typically takes precedence if not explicitly managed otherwise.
 
-### 2.7. Enabling Log Output (Optional)
+### 3.7. Enabling Log Output (Optional)
 This project uses the `log` crate. To see log output, set the `RUST_LOG` environment variable.
 ```bash
 # Example: Debug logs from linoss_rust crate for a test with WGPU
@@ -120,13 +239,15 @@ RUST_LOG=linoss_rust=info cargo run --example basic_usage --features ndarray_bac
 ```
 Ensure a logger like `env_logger` is initialized in `main.rs` or test setups (e.g., `env_logger::init()` or `env_logger::builder().is_test(true).try_init()`).
 
-## 3. Abstract Summary
+---
+
+## 4. Abstract Summary
 
 LinOSS models, inspired by cortical dynamics, are based on forced harmonic oscillators. They aim for efficient learning on long sequences, offering stable dynamics and universal approximation. The paper proposes LinOSS-IM (Implicit Time Integration) and LinOSS-IMEX (Implicit-Explicit Time Integration). This implementation currently focuses on the real-valued LinOSS-IM.
 
-## 4. Core Concepts for Implementation
+## 5. Core Concepts for Implementation
 
-### 4.a. State-Space Model (SSM) Fundamentals
+### 5.a. State-Space Model (SSM) Fundamentals
 The model uses a system of forced linear second-order ODEs:
 ```
 𝐲''(𝑡) = -𝐀𝐲(𝑡) + 𝐁𝐮(𝑡) + 𝐛bias_input
@@ -147,12 +268,12 @@ With auxiliary state `𝐳(𝑡) = 𝐲'(𝑡)`, it becomes a first-order system
 𝐲'(𝑡) = 𝐳(𝑡)
 ```
 
-### 4.b. Forced Harmonic Oscillators
+### 5.b. Forced Harmonic Oscillators
 The model is founded on uncoupled forced harmonic oscillators.
 
-### 4.c. Discretization Methods
+### 5.c. Discretization Methods
 
-#### 4.c.i. LinOSS-IM (Implicit Time Integration)
+#### 5.c.i. LinOSS-IM (Implicit Time Integration)
 Discretized states `𝐳𝑛, 𝐲𝑛` at `𝑡𝑛 = 𝑛Δ𝑡`:
 ```
 𝐳𝑛 = 𝐳𝑛−1 + Δ𝑡(-𝐀𝐲𝑛 + 𝐁𝐮𝑛 + 𝐛bias_input)
@@ -163,7 +284,7 @@ The recurrence is `𝐱𝑛 = 𝐌_IM𝐱𝑛−1 + 𝐅_IM_𝑛`, where `𝐌_I
 `𝐌⁻¹` is computed efficiently. This method is dissipative.
 The current implementation is real-valued and focuses on this variant.
 
-#### 4.c.ii. LinOSS-IMEX (Implicit-Explicit Time Integration)
+#### 5.c.ii. LinOSS-IMEX (Implicit-Explicit Time Integration)
 Discretization:
 ```
 𝐳𝑛 = 𝐳𝑛−1 + Δ𝑡(-𝐀𝐲𝑛−1 + 𝐁𝐮𝑛 + 𝐛bias_input)
@@ -172,7 +293,7 @@ Discretization:
 Matrix form `𝐱𝑛 = 𝐌_IMEX𝐱𝑛−1 + 𝐅_IMEX_𝑛`. This method is conservative.
 (Not yet implemented, planned for future).
 
-### 4.d. Fast Recurrence via Associative Parallel Scans
+### 5.d. Fast Recurrence via Associative Parallel Scans
 The recurrence `𝐱𝑛 = 𝐌𝐱𝑛−1 + 𝐅𝑛` can be parallelized.
 The associative operation: `(𝐚₁, 𝐚₂) ⋅ (𝐛₁, 𝐛₂) = (𝐛₁∘𝐚₁, 𝐛₁∘𝐚₂ + 𝐛₂)`
 The `LinossLayer` implements several scan algorithms:
@@ -183,9 +304,9 @@ The `LinossLayer` implements several scan algorithms:
 - `forward_work_efficient_scan`: Work-efficient parallel scan.
 These operate on real-valued states and matrices.
 
-## 5. Rust and Burn Crate Considerations
+## 6. Rust and Burn Crate Considerations
 
-### 5.a. Mapping to Burn Tensors
+### 6.a. Mapping to Burn Tensors
 - Matrices (`a_diag_mat`, `b_matrix`, `c_matrix`, `d_matrix`) and vectors (`bias_b`, states `y_state`, `z_state`, inputs `u_input`, outputs `x_output`) are Burn tensors.
 - **Tensor Data Handling**:
     - **Creation (Input to Tensor)**: Use `burn::tensor::TensorData::new(data_vec, shape)` to wrap raw data, then `Tensor::<B, D>::from_data(tensor_data.convert::<ElementType>(), &device)`.
@@ -194,7 +315,7 @@ These operate on real-valued states and matrices.
 - All parameters and states in the current LinOSS-IM are real-valued (typically `f32`).
 - **Naming**: Struct fields and variables use `snake_case` (e.g., `a_matrix`, `b_matrix`). Comments map to mathematical notation.
 
-### 5.b. Burn Modules
+### 6.b. Burn Modules
 - `src/linoss/layer.rs`: `LinossLayer<B: Backend>` - Implements a single LinOSS-IM layer (real-valued).
     - Manages parameters: `a_diag_mat`, `b_matrix`, `c_matrix`, `d_matrix` (optional), `bias_b`.
     - `forward_step(u_input, y_prev_state, z_prev_state)` method for single time-step update.
@@ -202,18 +323,18 @@ These operate on real-valued states and matrices.
 - `src/linoss/block.rs`: `LinossBlock<B: Backend>` - Comprises a `LinossLayer`, followed by GLU activation and `LayerNorm`.
 - `src/linoss/model.rs`: `FullLinossModel<B: Backend>` - Stacks `LinossBlock`s with input/output linear projection layers and residual connections.
 
-### 5.c. Efficient Computations
+### 6.c. Efficient Computations
 - Diagonal `𝐀` allows element-wise operations.
 - `𝐌⁻¹` for LinOSS-IM is constructed efficiently from `𝐒 = (I + Δ𝑡²𝐀)⁻¹`.
 - Parallel scans are implemented for sequence processing.
 
-### 5.d. Parameterization and Initialization
+### 6.d. Parameterization and Initialization
 - `𝐀 = relu(a_diag_mat)` ensures non-negative diagonal elements `A𝑘𝑘 ≥ 0`.
 - `a_diag_mat` initialized (e.g., from `Distribution::Normal(0.0, init_std)`).
 - `delta_t` (Δ𝑡) is a configurable `f32`.
 - Other weights (`b_matrix`, `c_matrix`, `d_matrix`, projection weights) use standard Burn initializers (e.g., `Initializer::KaimingUniform` or `Initializer::Normal`).
 
-## 6. Project Structure
+## 7. Project Structure
 
 ```
 LinossRust/

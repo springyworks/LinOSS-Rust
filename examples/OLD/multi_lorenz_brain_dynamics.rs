@@ -8,7 +8,7 @@ use burn::{
     prelude::*,
 };
 use linoss_rust::linoss::{
-    dlinoss_layer::{DLinossLayer, DLinossLayerConfig},
+    production_dlinoss::{ProductionDLinossModel, ProductionDLinossConfig, create_production_dlinoss_classifier},
 };
 use ratatui::{
     prelude::{Constraint, CrosstermBackend, Direction, Layout, Frame},
@@ -96,8 +96,8 @@ struct BrainRegion {
     position: (f64, f64, f64), // Current Lorenz state (x, y, z)
     trajectory: VecDeque<(f64, f64)>, // 2D projection for visualization
     color: Color,
-    dlinoss_model: Option<DLinossLayer<B>>,
-    dlinoss_input: Option<Tensor<B, 2>>,
+    dlinoss_model: Option<ProductionDLinossModel<B>>,
+    dlinoss_input: Option<Tensor<B, 3>>,
 }
 
 impl BrainRegion {

@@ -1,6 +1,5 @@
 // src/linoss/layer.rs
 // Implementation of the LinossLayer for LinOSS-IM
-
 use burn::prelude::Config;
 use burn::{
     module::{Module, Param},
@@ -11,7 +10,6 @@ use burn::{
     },
 };
 use crate::linoss::LinossOutput; // Corrected import path for LinossOutput
-
 /// Configuration for the `LinossLayer` using LinOSS-IM.
 #[derive(Config, Debug)] // Removed manual Clone, Config should provide it or it's not needed for config
 pub struct LinossLayerConfig {
@@ -30,19 +28,16 @@ pub struct LinossLayerConfig {
     #[config(default = true)]
     pub enable_d_feedthrough: bool, 
 }
-
 impl LinossLayerConfig {
     // Removed manual new() and with_...() methods.
     // #[derive(Config)] will generate with_<field_name>() methods.
     // For fields without a default, they must be set during struct initialization.
     // Example: LinossLayerConfig { d_state_m: ..., d_input_p: ..., d_output_q: ..., delta_t: ..., ..Default::default() }
     // or by using the generated `with_...` methods after a default construction if possible.
-
     /// Initializes a `LinossLayer` module from this configuration.
     /// This is the method that `#[derive(Config)]` expects for module initialization.
     pub fn init<B: Backend>(&self, device: &B::Device) -> LinossLayer<B> {
         let init_std_val = self.init_std;
-
         // A_diag_mat (diagonal of matrix A_kk) is a vector.
         let a_diag_mat = Param::from_tensor( 
             Tensor::random([self.d_state_m], Distribution::Normal(0.0, init_std_val), device)
@@ -67,7 +62,6 @@ impl LinossLayerConfig {
         } else {
             None
         };
-
         LinossLayer {
             a_diag_mat, 
             b_matrix,   
@@ -82,7 +76,6 @@ impl LinossLayerConfig {
         }
     }
 }
-
 /// Represents a single Linear Oscillatory State-Space (LinOSS) layer
 /// implementing the LinOSS-IM (Implicit Time Integration) method.
 /// The combined state is x = [z, y], with dim 2*m.
@@ -92,17 +85,14 @@ pub struct LinossLayer<B: Backend> {
     a_diag_mat: Param<Tensor<B, 1>>, // Diagonal of matrix A (A_kk), m elements.
     b_matrix: Param<Tensor<B, 2>>,   // Matrix B (B_k), m x p.
     bias_b: Param<Tensor<B, 1>>,     // Bias for B_matrix * u_input, m elements.
-
     c_matrix: Param<Tensor<B, 2>>,   // Matrix C (C_k), q x m.
     d_matrix: Option<Param<Tensor<B, 2>>>, // Optional matrix D (D_k), q x p.
-
     d_state_m: usize,
     d_input_p: usize,
     d_output_q: usize,
     delta_t: f32,
     enable_d_feedthrough: bool, 
 }
-
 impl<Be: Backend> LinossLayer<Be> { 
     /// Forward pass for a single time step of the LinOSS layer.
     ///
@@ -122,11 +112,9 @@ impl<Be: Backend> LinossLayer<Be> {
     ) -> LinossOutput<Be, 2> { // Returns LinossOutput struct
         let device = input.device(); // Get device from input tensor
         let batch_size = input.dims()[0];
-
         // Initialize hidden_state if not provided
         let y_prev_state = hidden_state_option
             .unwrap_or_else(|| Tensor::zeros([batch_size, self.d_state_m], &device));
-
         // Get actual tensors from Parameter wrappers
         let a_diag_elements = self.a_diag_mat.val(); // Shape [M]
         let b_matrix_tensor = self.b_matrix.val();   // Shape [M, P]

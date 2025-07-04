@@ -44,7 +44,7 @@ egui = "0.31"
 egui_plot = "0.31"
 eframe = { version = "0.31", features = ["wgpu"] }
 egui-wgpu = "0.31"
-wgpu = "25.0"  # egui 0.31 uses wgpu 25.x
+wgpu = "24.0"  # Match eframe's wgpu version
 bytemuck = { version = "1.0", features = ["derive"] }
 env_logger = "0.10"
 log = "0.4"
@@ -57,7 +57,8 @@ egui_extras = { version = "0.31", features = ["image"] }
 rand = "0.8"
 anyhow = "1.0"
 nalgebra = "0.33"
-burn = { path = "/home/rustuser/projects/from_github/burnko/crates/burn", features = ["ndarray", "autodiff", "std", "wgpu"], default-features = false }
+tokio = { version = "1.0", features = ["full"] }
+burn = { path = "/home/rustuser/projects/from_github/burnko/crates/burn", features = ["autodiff", "std", "wgpu"], default-features = false }
 
 # LinOSS from the parent crate
 linoss_rust = { path = "../.." }

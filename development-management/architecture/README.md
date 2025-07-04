@@ -1,177 +1,109 @@
-# LinOSS Brain Dynamics Architecture Documentation
+# LinOSS Rust Architecture Documentation
 
-This directory contains the complete architectural documentation for the LinOSS Brain Dynamics simulation system, inspired by Prof. Carhart-Harris's work on consciousness and chaotic brain dynamics.
+**REALITY CHECK:** July 4, 2025  
+**STATUS:** Updated to reflect actual working implementation
+
+This directory contains architectural documentation for the LinOSS Rust D-LinOSS signal analyzer.
 
 ## 📁 Directory Contents
 
-### 🎨 **Visual Architecture**
-- **`linoss_brain_dynamics_complete.drawio`** - **Main architecture diagram** (6 pages)
-  - **Page 1:** System Architecture - Complete brain regions, dLinOSS layers, coupling matrix
-  - **Page 2:** Data Flow - Input → Processing → Output pipeline with performance metrics  
-  - **Page 3:** Timing Sequence - Step-by-step execution timeline and performance analysis
-  - **Page 4:** Neural Architecture - Deep learning perspective of Carhart-Harris consciousness model
-  - **Page 5:** State-Space Model - Mathematical representation with matrices A, B, C, D
-  - **Page 6:** Control System Model - Feedback control system diagram with neural controller
+### 📊 **Current Implementation**
+- **`CURRENT_IMPLEMENTATION.md`** - **ACCURATE STATUS** of what actually works
+  - Real D-LinOSS signal analyzer functionality
+  - Dual-mode visualization (Lissajous + Oscilloscope) 
+  - Interactive parameter controls and pulse patterns
+  - Mathematical validation and test results
+  - No false claims or unimplemented features
 
-### 📋 **Documentation**
-- **`general_linoss_system_architecture.md`** - General LinOSS framework architecture and design principles
-- **`brain_dynamics_technical_analysis.md`** - Detailed technical analysis of brain dynamics implementation
-- **`README.md`** - This file (directory overview and navigation guide)
+### 🎨 **Visual Architecture** 
+- **`general_linoss_system_architecture.md`** - Updated system architecture (accurate)
+- **`brain_dynamics_*.md`** - ⚠️ **OUTDATED** - Contains false claims about brain dynamics
+- **DrawIO diagrams** - ⚠️ **OUTDATED** - Do not reflect current implementation
 
-## 🧠 **System Overview**
+## 🔬 **What Actually Works (July 2025)**
 
-The LinOSS Brain Dynamics system simulates chaotic brain dynamics using:
+### **Real D-LinOSS Signal Analyzer:**
+- **Technology**: egui-based GUI with real-time visualization
+- **Algorithm**: D-LinOSS (3→32→3) following arXiv:2505.12171 
+- **Visualization**: Dual-mode (Lissajous phase space + Oscilloscope time-series)
+- **Interaction**: 8 pulse patterns, real-time parameter control
+- **Testing**: Comprehensive test suite with mathematical validation
+- **Performance**: 50-60 Hz update rate, stable operation
 
-### **Core Components:**
-- **3 Brain Regions:** Prefrontal Cortex, Default Mode Network, Thalamus
-- **3 dLinOSS Layers:** Neural oscillatory networks (3→8→3 topology each)
-- **Lorenz Attractors:** Different parameters per region for realistic dynamics
-- **Coupling Matrix:** Inter-region communication and influence
-- **TUI Visualization:** Real-time phase space display
+### **Core Technical Achievement:**
+- ✅ **D-LinOSS Implementation**: Diagonal matrix parallel-scan optimization
+- ✅ **Euler Discretization**: Numerically stable with energy dissipation
+- ✅ **Real-time Visualization**: Smooth 60 FPS rendering with trail effects
+- ✅ **Mathematical Validation**: All tests pass, verified against paper
+- ✅ **Interactive Controls**: Live parameter adjustment without instability
 
-### **Key Metrics:**
-- **Parameters:** ~471 total across all dLinOSS layers
-- **Performance:** 33.3 Hz real-time simulation
-- **Memory:** ~100KB working set
-- **CPU:** ~15% single core usage
-- **Status:** ✅ Long-term chaos sustainability achieved
+## ❌ **What Documentation Claims But Doesn't Exist**
 
-## 📊 **Architecture Views**
+### **Brain Dynamics System (FALSE CLAIMS):**
+- ❌ NO brain regions (PFC, DMN, Thalamus)  
+- ❌ NO Lorenz attractors with brain parameters
+- ❌ NO inter-region coupling matrices
+- ❌ NO consciousness simulation or chaotic brain dynamics
+- ❌ NO TUI visualization or 33.3 Hz performance claims
 
-### **1. System Architecture (Page 1)**
-Shows the complete system structure with:
-- Brain region layouts and parameters
-- dLinOSS layer configurations
-- Data flow connections
-- Simulation engine and UI components
+### **Multi-Backend Support (FALSE CLAIMS):**
+- ❌ NO WGPU GPU backend (only claims exist)
+- ❌ NO CUDA acceleration
+- ❌ NO Candle backend support
+- ✅ ONLY NdArray CPU backend actually works
 
-### **2. Data Flow (Page 2)**
-Illustrates information flow through:
-- Input layer (initial states, parameters, controls)
-- Processing layer (Lorenz → dLinOSS → Coupling → Integration)
-- Output layer (TUI rendering, phase space, data export)
+## 📋 **Documentation Status**
 
-### **3. Timing Sequence (Page 3)**
-Details execution timeline:
-- Initialization phase (parameters, UI setup)
-- Main simulation loop (compute, update, render)
-- Performance profiling and optimization points
+| File | Status | Accuracy |
+|------|--------|----------|
+| `CURRENT_IMPLEMENTATION.md` | ✅ **ACCURATE** | Reflects real code |
+| `general_linoss_system_architecture.md` | ✅ **UPDATED** | Fixed false claims |
+| `brain_dynamics_technical_analysis.md` | ❌ **OUTDATED** | Contains false claims |
+| `brain_dynamics_architecture.drawio` | ❌ **OUTDATED** | Not implemented |
+| DrawIO diagrams | ❌ **OUTDATED** | Need complete rewrite |
 
-### **4. Neural Architecture (Page 4)**
-Deep learning view of consciousness model:
-- Layered neural network representation
-- Carhart-Harris consciousness hierarchy
-- Information processing flow
-- Entropy and complexity measures
+## 🎯 **Current System Overview**
 
-### **5. State-Space Model (Page 5)**
-Mathematical control theory representation:
-- State matrices (A, B, C, D)
-- Signal flow diagram
-- Input/output relationships
-- System stability analysis
+The LinOSS Rust project implements a **D-LinOSS signal analyzer** with:
 
-### **6. Control System Model (Page 6)**
-Classical feedback control diagram:
-- Reference input (target brain state)
-- Neural controller (dLinOSS network)
-- Plant (brain dynamics/Lorenz chaos)
-- Feedback loop (sensory observation)
-- Transfer function analysis
-Details the execution timeline:
-- Per-timestep breakdown (dt = 0.005s)
-- Component timing analysis
-- Critical path identification (TUI rendering ~90% of frame time)
-- Performance optimization strategies
+### **Actual Components:**
+- **D-LinOSS Layer:** Mathematical implementation of diagonal state-space model
+- **Signal Analyzer:** Real-time processing of 3 input → 32 oscillator → 3 output
+- **Dual Visualization:** Lissajous (2D phase) + Oscilloscope (time-series)
+- **Interactive GUI:** egui-based with parameter controls and pulse patterns
+- **Test Suite:** Mathematical validation of algorithms and stability
 
-## 🔧 **Technical Specifications**
-
-### **dLinOSS Configuration:**
-- **Layer Count:** 3 (one per brain region)
-- **Topology:** Input=3, Hidden=8, Output=3
-- **Total Parameters:** ~471 (157 per layer)
-- **Oscillator Pairs:** 4 per region
-- **Damping:** Learnable scales enabled
-
-### **Lorenz Parameters:**
-- **PFC:** σ=10.0, ρ=28.0, β=8/3, coupling=0.05
-- **DMN:** σ=16.0, ρ=45.6, β=4.0, coupling=0.08  
-- **Thalamus:** σ=12.0, ρ=35.0, β=3.0, coupling=0.12
-
-### **Performance Optimizations:**
-- **Time Step:** 0.005s (improved stability)
-- **dLinOSS Influence:** 0.002 (reduced from 0.01)
-- **Frame Rate:** 33.3 Hz target with adaptive skipping
-- **Memory Management:** Circular trajectory buffers (2000 points/region)
-
-## 🎯 **Key Achievements**
-
-### ✅ **Convergence Problem Solved**
-- **Issue:** Chaotic dynamics converged to static points
-- **Solution:** Reduced time step and dLinOSS influence
-- **Result:** Sustained chaos for extended periods
-
-### ✅ **Real-Time Performance**
-- **Target:** 33.3 Hz simulation rate
-- **Achievement:** Stable real-time operation
-- **Optimization:** TUI rendering critical path managed
-
-### ✅ **Neural Network Integration**
-- **dLinOSS Layers:** Successfully integrated with chaotic dynamics
-- **Learning:** Oscillatory behavior with damping modulation
-- **Influence:** Subtle but measurable impact on trajectories
-
-## 🔄 **Data Processing Pipeline**
-
-1. **Input Processing** (~0.1ms)
-   - Read current brain region states
-   - Apply user controls and parameter updates
-
-2. **Lorenz Computation** (~0.3ms)
-   - Calculate derivatives for all 3 regions
-   - Apply region-specific parameters
-
-3. **dLinOSS Processing** (~2.1ms)
-   - Forward pass through neural oscillatory networks
-   - Generate modulation signals
-
-4. **Coupling & Integration** (~0.3ms)
-   - Inter-region coupling matrix multiplication
-   - Euler integration with energy injection
-
-5. **Visualization** (~26.9ms)
-   - TUI rendering and phase space display
-   - Trajectory buffer management
-
-## 📈 **Future Architecture Considerations**
-
-### **Potential Enhancements:**
-- **RK4 Integration:** Higher-order numerical methods
-- **GPU Acceleration:** WGPU-based parallel processing
-- **Advanced dLinOSS:** Deeper networks or attention mechanisms
-- **Multi-Scale Dynamics:** Hierarchical brain modeling
-- **Real-Time Analysis:** Online chaos metrics and bifurcation detection
-
-### **Scalability:**
-- **More Brain Regions:** Extend beyond 3 regions
-- **Larger Networks:** Scale dLinOSS layer sizes
-- **Distributed Simulation:** Multi-node parallel execution
+### **Real Performance:**
+- **Update Rate:** 50-60 Hz (not 33.3 Hz as claimed elsewhere)
+- **Memory:** ~50MB typical usage  
+- **Backend:** NdArray CPU-only (no GPU acceleration)
+- **Stability:** Long-term operation without numerical issues
 
 ## 🛠️ **How to Use This Documentation**
 
-1. **Start with:** `README.md` (this file) for directory overview
-2. **Brain Dynamics Focus:** Open `linoss_brain_dynamics_complete.drawio` in Draw.io for visual architecture
-3. **Technical Implementation:** Review `brain_dynamics_technical_analysis.md` for detailed analysis
-4. **General Framework:** See `general_linoss_system_architecture.md` for broader LinOSS system design
-5. **Code Reference:** Refer to `/examples/multi_lorenz_brain_dynamics.rs` for implementation
+### **For Accurate Information:**
+1. **Start with:** `CURRENT_IMPLEMENTATION.md` for real status
+2. **Architecture:** `general_linoss_system_architecture.md` (updated)
+3. **Code Reference:** `src/main.rs` for actual implementation
 
-## 📝 **Maintenance Notes**
+### **AVOID These Files (Outdated):**
+- ❌ `brain_dynamics_technical_analysis.md` - Contains false brain dynamics claims
+- ❌ DrawIO files - Show unimplemented brain simulation
+- ❌ Any claims about multi-backend GPU support
 
-- **Diagrams:** Keep Draw.io file synchronized with code changes
-- **Performance:** Update timing measurements after optimizations
-- **Documentation:** Reflect architectural changes in all documents
-- **Version:** Current as of June 13, 2025
+## 📝 **Documentation Cleanup TODO**
+
+### **High Priority:**
+1. **Replace brain dynamics diagrams** with D-LinOSS signal analyzer architecture
+2. **Update all false multi-backend claims** to reflect NdArray-only reality
+3. **Correct performance metrics** to actual measured values
+4. **Remove consciousness simulation references** completely
+
+### **Completed:**
+- ✅ Created `CURRENT_IMPLEMENTATION.md` with accurate status
+- ✅ Updated `general_linoss_system_architecture.md`
+- ✅ This README with reality-based information
 
 ---
 
-*This architecture documentation supports the LinOSS Brain Dynamics project's goal of creating a real-time chaotic brain simulation with neural oscillatory network integration.*
+**IMPORTANT:** This documentation now reflects the **actual working code** as of July 4, 2025. No false promises, no unimplemented features - just honest technical documentation of what really exists and works.

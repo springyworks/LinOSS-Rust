@@ -1,40 +1,42 @@
 # LinOSS Rust System Architecture
 
+**ACCURATE AS OF:** July 4, 2025  
+**STATUS:** Reflects actual implemented functionality
+
 ## Overview
 
-The LinOSS Rust project implements Linear Oscillatory State-Space Models with a modular, extensible architecture supporting multiple backends, research variants, and deployment targets.
+The LinOSS Rust project implements D-LinOSS (Damped Linear Oscillatory State-Space) signal processing with real-time visualization. The system focuses on signal analysis using the mathematical framework from arXiv:2505.12171 with diagonal matrix parallel-scan optimization.
 
-## High-Level Architecture
+## High-Level Architecture (ACTUAL)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    LinOSS Rust System                      │
+│                LinOSS Rust System (Real)                   │
 ├─────────────────────────────────────────────────────────────┤
 │                   Application Layer                        │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │
-│  │    CLI      │ │   Examples & │ │    Benchmarks        │   │
-│  │   Tools     │ │   Tutorials   │ │                     │   │
+│  │  D-LinOSS   │ │  Binary     │ │    Benchmarks &     │   │
+│  │  Signal     │ │  Test Apps  │ │    Comparisons      │   │
+│  │  Analyzer   │ │  (20+ bins) │ │                     │   │
 │  └─────────────┘ └─────────────┘ └─────────────────────┘   │
 ├─────────────────────────────────────────────────────────────┤
-│                      API Layer                             │
+│                      GUI Layer                             │
 │  ┌─────────────────────────────────────────────────────────┐ │
-│  │              High-Level Models                         │ │
+│  │              egui Real-time Interface                  │ │
 │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐   │ │
-│  │  │FullLinoss   │ │  D-LinOSS   │ │   Custom        │   │ │
-│  │  │   Model     │ │   Model     │ │   Models        │   │ │
+│  │  │ Lissajous   │ │Oscilloscope │ │   Interactive   │   │ │
+│  │  │    View     │ │    View     │ │   Controls      │   │ │
+│  │  │  (2D plot)  │ │(Time series)│ │  (Parameters)   │   │ │
 │  │  └─────────────┘ └─────────────┘ └─────────────────┘   │ │
 │  └─────────────────────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────┤
 │                     Core Layer                             │
 │  ┌─────────────────────────────────────────────────────────┐ │
-│  │                Core Components                         │ │
+│  │                Core D-LinOSS                           │ │
 │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐   │ │
-│  │  │  LinOSS     │ │  D-LinOSS   │ │   Parallel      │   │ │
-│  │  │   Layer     │ │   Layer     │ │    Scan         │   │ │
-│  │  └─────────────┘ └─────────────┘ └─────────────────┘   │ │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐   │ │
-│  │  │   Block     │ │ Activation  │ │ Visualization   │   │ │
-│  │  │ Components  │ │ Functions   │ │   Utilities     │   │ │
+│  │  │  D-LinOSS   │ │   Base      │ │   Parallel      │   │ │
+│  │  │   Layer     │ │  LinOSS     │ │    Scan         │   │ │
+│  │  │ (3→32→3)    │ │   Layer     │ │  Algorithms     │   │ │
 │  │  └─────────────┘ └─────────────┘ └─────────────────┘   │ │
 │  └─────────────────────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────┤
@@ -43,62 +45,79 @@ The LinOSS Rust project implements Linear Oscillatory State-Space Models with a 
 │  │                 Burn Framework                         │ │
 │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐   │ │
 │  │  │   NdArray   │ │    WGPU     │ │    Candle       │   │ │
-│  │  │    (CPU)    │ │   (GPU)     │ │   (Optional)    │   │ │
+│  │  │ (WORKING)   │ │ (NOT IMPL)  │ │  (NOT IMPL)     │   │ │
 │  │  └─────────────┘ └─────────────┘ └─────────────────┘   │ │
 │  └─────────────────────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────┤
 │                  Platform Layer                            │
 │  ┌─────────────────────────────────────────────────────────┐ │
 │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐   │ │
-│  │  │   Native    │ │    GPU     │ │   GPU Compute   │   │ │
-│  │  │  (x86_64)   │ │   (CUDA)   │ │   (CUDA/ROCm)   │   │ │
+│  │  │   Native    │ │   No GPU    │ │  No GPU Compute │   │ │
+│  │  │  x86_64     │ │  Support    │ │     Support     │   │ │
+│  │  │ (WORKING)   │ │   (YET)     │ │     (YET)       │   │ │
 │  │  └─────────────┘ └─────────────┘ └─────────────────┘   │ │
 │  └─────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Module Structure
+## Core Implementation (WHAT ACTUALLY EXISTS)
 
-### Core Modules (`src/linoss/`)
+### Main Application (`src/main.rs`)
+- **Purpose**: Real-time D-LinOSS signal analyzer with dual visualization
+- **Features**: 
+  - Lissajous phase space plots (output1 vs output2)
+  - Oscilloscope time-series view (all 6 signals vs time)
+  - 8 pulse generation patterns (Classic/Complex Lissajous, Phased, etc.)
+  - Interactive parameter control (frequency, amplitude, damping)
+  - Real-time trail visualization with fading effects
+- **Technology**: egui GUI, 60 FPS rendering
+- **Configuration**: 3 inputs → 32 D-LinOSS oscillators → 3 outputs
 
-```
-src/linoss/
-├── mod.rs                  # Module exports and public API
-├── layer.rs                # LinOSS layer implementation
-├── dlinoss_layer.rs        # D-LinOSS with learnable damping
-├── model.rs                # High-level model containers
-├── block.rs                # Reusable building blocks
-├── parallel_scan.rs        # Parallel processing algorithms
-├── activation.rs           # Activation functions
-├── layers.rs               # Layer utilities
-└── vis_utils.rs           # Visualization helpers
-```
+### D-LinOSS Core (`src/linoss/dlinoss_layer.rs`)
+- **Purpose**: Damped Linear Oscillatory State-Space implementation
+- **Features**: 
+  - Diagonal matrix parallel-scan optimization (arXiv:2505.12171)
+  - Learnable damping coefficients with energy dissipation
+  - Euler discretization with numerical stability
+  - Multi-timescale damping dynamics
+- **API**: Single forward pass with hidden state management
+- **Backend**: NdArray (CPU tensors only)
 
-### Key Components
+### Test Suite (`tests/integration_test.rs`)
+- **Purpose**: Mathematical validation of D-LinOSS algorithms
+- **Coverage**:
+  - Euler discretization correctness
+  - Production D-LinOSS implementation validation
+  - Numerical stability verification
+- **Status**: ✅ All tests passing (no "0 tests" issues)
 
-#### 1. LinOSS Layer (`layer.rs`)
-- **Purpose**: Core linear oscillatory state-space implementation
-- **Features**: LinOSS-IM implicit time integration
-- **Dependencies**: Burn framework for tensor operations
-- **API**: Single-step forward pass with hidden state management
+### Binary Applications (`src/bin/`)
+- **20+ working applications**:
+  - `benchmark_scan_methods.rs` - Performance analysis
+  - `dlinoss_comparison.rs` - Algorithm comparison  
+  - `test_linoss_basic.rs` - Basic functionality
+  - `training_comparison.rs` - Model analysis
+  - Many others for specific research tasks
 
-#### 2. D-LinOSS Layer (`dlinoss_layer.rs`)
-- **Purpose**: Damped LinOSS with learnable energy dissipation
-- **Features**: Multi-timescale damping, configurable damping
-- **Dependencies**: Extends LinOSS with additional parameters
-- **API**: Sequence-level forward pass with automatic damping
+## What is NOT Implemented
 
-#### 3. Model Container (`model.rs`)
-- **Purpose**: High-level model orchestration
-- **Features**: Multi-layer composition, training utilities
-- **Dependencies**: Core layers and Burn modules
-- **API**: Complete model training and inference
+### ❌ Brain Dynamics (Documentation Lies)
+- **NO** brain regions (PFC, DMN, Thalamus)
+- **NO** Lorenz attractors
+- **NO** neural coupling matrices
+- **NO** consciousness simulation
+- **NO** chaotic brain dynamics
 
-#### 4. Parallel Scan (`parallel_scan.rs`)
-- **Purpose**: Efficient parallel processing of sequences
-- **Features**: GPU-optimized prefix operations
-- **Dependencies**: Backend-specific tensor operations
-- **API**: Parallel and sequential scan implementations
+### ❌ Multi-Backend Support (Documentation Lies)  
+- **NO** WGPU GPU backend
+- **NO** CUDA acceleration
+- **NO** Candle backend support
+- **ONLY** NdArray CPU backend works
+
+### ❌ Advanced Performance Claims (Documentation Lies)
+- **NO** 33.3 Hz simulation (actual: 50-60 Hz)
+- **NO** TUI visualization (only egui GUI)
+- **NO** multi-region trajectory display
 
 ## Data Flow Architecture
 

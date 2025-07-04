@@ -1,14 +1,26 @@
 [workspace]
 members = [
     ".",
-    "examples/egui_native"
+    "examples/egui_native",
+    "examples/dlinoss_diagram"
 ]
+
 
 [package]
 name = "linoss_rust"
 version = "0.2.0"
 edition = "2024"
 default-run = "linoss_rust"
+description = "Core LinOSS (Linear Oscillatory State-Space) models, layers, and utilities for deep learning and control."
+license = "MIT OR Apache-2.0"
+authors = ["springyworks <info@springyworks.com>"]
+repository = "https://github.com/springyworks/LinOSS-Rust"
+documentation = "https://github.com/springyworks/LinOSS-Rust"
+readme = "README.md"
+
+[lib]
+name = "linoss_rust"
+path = "src/lib.rs"
 
 # Enable unstable features for CubeCL compatibility
 [lints.rust]
@@ -59,7 +71,13 @@ libc = { version = "0.2", optional = true }
 # egui for native GUI applications (always available)
 eframe = "0.31.1"
 egui = "0.31.1"
+egui_plot = "0.31.0"
 egui_extras = { version = "0.31.1", features = ["image", "svg"] }
+
+# WGPU and GPU compute dependencies
+wgpu = "24.0"
+bytemuck = { version = "1.0", features = ["derive"] }
+futures-intrusive = "0.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.3", features = ["wasm_js"] }

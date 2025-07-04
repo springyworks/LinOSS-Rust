@@ -13,7 +13,6 @@
 **📅 Last Update:** 2025-06-30 17:45:00  
 **📍 Project Path:** `../../../maxGraphRust` → `dlinoss_diagram`
 
----
 
 ## 📊 **FEATURE STATUS MATRIX**
 
@@ -33,26 +32,24 @@
 | **Interactive Editor** | ✅ READY | Full graph editor with UI | Drag, select, context menus, all UX patterns | |
 | **File Management** | ✅ READY | Recent files, auto-save | Complete persistence system | |
 
----
 
 ## 🔧 **INTEGRATION QUICK-START**
 
 ### **📦 Cargo.toml**
 ```toml
 [dependencies]
-maxgraph = { path = "../../../maxGraphRust" }
+mGraphRust = { path = "../../../mGraphRust" }
 ```
 
 ### **⚡ Basic Usage**
 ```rust
-use maxgraph::{GenericGraph, calculate_edge_paths, LayoutOptions, EdgeStyle};
+use mGraphRust::{GenericGraph, calculate_edge_paths, LayoutOptions, EdgeStyle};
 
 let mut graph = GenericGraph::new();
 let node1 = graph.add_node(your_component);
 let paths = calculate_edge_paths(&graph, |id| get_rect(id), LayoutOptions::default());
 ```
 
----
 
 ## �� **CURRENT STATS**
 
@@ -65,7 +62,6 @@ let paths = calculate_edge_paths(&graph, |id| get_rect(id), LayoutOptions::defau
 | Test Coverage | Manual (all features tested) |
 | Documentation | Code examples ready |
 
----
 
 ## 🎯 **NEXT ACTIONS**
 
@@ -77,16 +73,10 @@ let paths = calculate_edge_paths(&graph, |id| get_rect(id), LayoutOptions::defau
 | Performance validation | dlinoss_diagram Copilot | MEDIUM | ⏳ PENDING |
 | API refinement (if needed) | MaxGraph Copilot | LOW | ✅ ON STANDBY |
 
----
 
 ## 💡 **COMMUNICATION PROTOCOL**
 
 ### **Status Icons:**
-- ✅ **READY** - Feature complete and tested
-- 🔄 **IN PROGRESS** - Currently working on it  
-- ⏳ **PENDING** - Waiting for other party
-- ❌ **BLOCKED** - Issue needs resolution
-- 🆕 **NEW** - Just added/discovered
 
 ### **Update Format:**
 1. **Edit this table directly**
@@ -94,6 +84,5 @@ let paths = calculate_edge_paths(&graph, |id| get_rect(id), LayoutOptions::defau
 3. **Use feedback columns** for communication
 4. **Keep it concise** - one line per update
 
----
 
 **📍 Current Focus:** Awaiting dlinoss_diagram integration testing

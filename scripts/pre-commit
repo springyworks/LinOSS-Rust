@@ -1,0 +1,36 @@
+#!/bin/bash
+# Pre-commit hook to check example status
+# Install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+echo "🔍 Checking example status before commit..."
+
+# Check if any examples are being committed
+EXAMPLES_CHANGED=$(git diff --cached --name-only | grep "^examples/.*\.rs$" || true)
+
+if [ -n "$EXAMPLES_CHANGED" ]; then
+    echo "📝 Examples being committed:"
+    echo "$EXAMPLES_CHANGED"
+    
+    # Quick compilation check
+    echo "🧪 Quick compilation check..."
+    for file in $EXAMPLES_CHANGED; do
+        if [[ "$file" =~ examples/([^/]+)\.rs$ ]]; then
+            example_name="${BASH_REMATCH[1]}"
+            echo -n "  Testing $example_name... "
+            if cargo check --example "$example_name" 2>/dev/null; then
+                echo "✅"
+            else
+                echo "❌ COMPILATION FAILED"
+                echo "Error: Example $example_name does not compile!"
+                echo "Please fix compilation errors before committing."
+                exit 1
+            fi
+        fi
+    done
+    
+    # Update status tracking
+    echo "📊 Updating status tracking..."
+    ./scripts/check_project_status.sh --quiet
+fi
+
+echo "✅ Pre-commit checks passed!"

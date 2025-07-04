@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../../../maxGraphRust"
+			"path": "../../../mGraphRust"
 		}
 	],
 	"settings": {

@@ -4,10 +4,10 @@
 
 use egui::{Color32, Vec2, Ui};
 use crate::svg_export::SvgExporter;
-use maxgraph::{self, GenericGraph, NodeId, LayoutOptions, EdgeStyle};
+use mgraphrust::{self, GenericGraph, NodeId, LayoutOptions, EdgeStyle};
 use std::collections::HashMap;
 
-// mod pathfinding; // This module is now obsolete and replaced by maxGraphRust
+// mod pathfinding; // This module is now obsolete and replaced by mGraphRust
 
 /// Main application structure for the D-LinOSS diagram generator.
 /// 
@@ -436,7 +436,7 @@ impl DLinossDiagramApp {
             max_iterations: 1000,
         };
 
-        let paths = maxgraph::layout::calculate_edge_paths(&self.graph, |node_id| {
+    let paths = mgraphrust::layout::calculate_edge_paths(&self.graph, |node_id| {
             let component = self.graph.get_node(node_id).unwrap();
             egui::Rect::from_center_size(component.position, component.size)
         }, layout_options);

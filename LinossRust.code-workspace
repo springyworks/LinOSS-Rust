@@ -4,10 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../../from_github/burnko"
-		},
-		{
-			"path": "../../from_github/cubecl"
+			"path": "../../from_github/damped-linoss"
 		}
 	],
 	"settings": {
